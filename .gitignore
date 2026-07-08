@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 .env.local
 .superpowers/
+.claude/
+.playwright-mcp/
+.serena/
+lloyd-about-page.png
