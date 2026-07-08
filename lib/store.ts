@@ -17,7 +17,7 @@ export interface PolicyRow {
 }
 export interface ClaimRow {
   id: string; policy_id: string; trigger: 'dispute_verdict' | 'delivery_timeout' | 'manual';
-  amount_usdt: number; status: 'pending' | 'paid'; tx_hash: string | null; created_at: string;
+  amount_usdt: number; status: 'pending' | 'sending' | 'paid'; tx_hash: string | null; created_at: string;
 }
 
 const num = (v: unknown) => Number(v); // supabase returns numeric as string
@@ -151,6 +151,16 @@ export async function getPendingClaims(): Promise<ClaimRow[]> {
   return (data ?? []) as ClaimRow[];
 }
 
+// D7: claims stuck in 'sending' are the crash-window fail-safe state — a prior run
+// moved the claim to 'sending', sent (or crashed around) the on-chain transfer, and
+// died before markClaimPaid. The transfer outcome is unknown, so these are NEVER
+// auto-retried; the executor surfaces them for an operator on-chain check.
+export async function getStuckSendingClaims(): Promise<ClaimRow[]> {
+  const { data, error } = await db.from('claims').select('*').eq('status', 'sending');
+  if (error) throw error;
+  return (data ?? []) as ClaimRow[];
+}
+
 export async function openClaim(
   policyId: string, trigger: ClaimRow['trigger'], amountUsdt: number,
 ): Promise<ClaimRow | null> {
@@ -163,10 +173,23 @@ export async function openClaim(
   return data as ClaimRow;
 }
 
+// D7 phase 1: move a claim pending -> sending BEFORE the on-chain transfer.
+// Guarded CAS: returns true iff this call transitioned a still-pending claim
+// (so the caller owns the send). Returns false if zero rows matched — the claim
+// is already 'sending' (a prior crashed run) or 'paid'; either way this run must
+// NOT send. Throws on any DB error.
+export async function markClaimSending(claimId: string): Promise<boolean> {
+  const { data, error } = await db.from('claims')
+    .update({ status: 'sending' })
+    .eq('id', claimId).eq('status', 'pending').select('id').maybeSingle();
+  if (error) throw error;
+  return !!data;
+}
+
 export async function markClaimPaid(claimId: string, txHash: string): Promise<void> {
   const { data: claim, error } = await db.from('claims')
     .update({ status: 'paid', tx_hash: txHash, paid_at: new Date().toISOString() })
-    .eq('id', claimId).eq('status', 'pending').select('policy_id, amount_usdt').maybeSingle();
+    .eq('id', claimId).in('status', ['pending', 'sending']).select('policy_id, amount_usdt').maybeSingle();
   if (error) throw error;
   if (!claim) {
     // Zero rows updated: claim missing, or already paid. Self-heal the case where a prior
