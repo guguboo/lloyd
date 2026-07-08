@@ -25,7 +25,7 @@ export default function About() {
           Lloyd reads the provider&apos;s onchain record, classifies its risk (class A: 3%, B: 7%, C: 15% —
           the underlying pricing), and returns three fixed-price tiers — <strong>Skiff $0.75</strong>,{' '}
           <strong>Frigate $1.50</strong>, <strong>Galleon $3.50</strong> — each buying risk-adjusted coverage
-          (up to 80% of the job value, capped at $50). The quote recommends the cheapest tier that reaches
+          (up to 80% of the job value, capped at $50 — capped at $10 for new, unproven providers). The quote recommends the cheapest tier that reaches
           your maximum achievable coverage. Or it declines.
         </li>
         <li>

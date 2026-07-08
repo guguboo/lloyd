@@ -42,7 +42,9 @@ export async function runSettlement(
     report.errors.push({ policyId: c.policy_id, error: 'stuck_sending' });
   }
 
-  // Pass 2: pending claims → pay (this IS the retry queue: failures stay pending)
+  // Pass 2: pending claims → pay (this IS the retry queue: failures before markClaimSending
+  // stay 'pending' and are retried next run; a throw after markClaimSending instead leaves
+  // the claim 'sending' — surfaced above as stuck_sending, deliberately not auto-retried)
   for (const c of await getPendingClaims()) {
     try {
       const policy = await getPolicy(c.policy_id);
