@@ -1,6 +1,7 @@
 import { supabaseAdmin as db } from './db';
 import type { ProviderRecord, RiskClass, Tier } from './underwrite/types';
 import { TIERS, coverageForTier } from './underwrite/engine';
+import { MAX_POOL_UTILIZATION } from '@/lib/treasury/solvency';
 
 export type PolicyStatus = 'active' | 'expired' | 'claim_pending' | 'paid_out';
 
@@ -78,7 +79,9 @@ export async function bindQuote(quoteId: string, tier: Tier, jobRef: string, dea
   if (error) throw error;
   // Over-commit recheck: re-read outstanding coverage (incl. this just-inserted policy) vs pool
   // BEFORE any money event, so the compensating delete undoes the insert cleanly if we breach.
-  // ponytail: optimistic recheck, not serialization — worst case one spurious refusal under concurrency; advisory locks if bind volume ever matters.
+  // ponytail: optimistic recheck, not serialization — the residual race is both concurrent
+  // rechecks passing (over-commit); the recheck narrows the window to insert→recheck, it does
+  // not close it. Advisory locks if bind volume ever matters.
   const [{ data: activeRows, error: activeErr }, { data: ledgerRows, error: ledgerReadErr }] = await Promise.all([
     db.from('policies').select('coverage_usdt').in('status', ['active', 'claim_pending']),
     db.from('ledger_events').select('amount_usdt'),
@@ -87,8 +90,11 @@ export async function bindQuote(quoteId: string, tier: Tier, jobRef: string, dea
   if (ledgerReadErr) throw ledgerReadErr;
   const outstanding = (activeRows ?? []).reduce((s, r) => s + num(r.coverage_usdt), 0);
   const pool = (ledgerRows ?? []).reduce((s, r) => s + num(r.amount_usdt), 0);
-  if (outstanding > 0.5 * pool) {
-    await db.from('policies').delete().eq('id', policy.id);
+  if (outstanding > MAX_POOL_UTILIZATION * pool) {
+    // supabase-js does not throw — an unchecked failed delete would leave an over-cap
+    // policy active with no premium. That must be loud, never silent.
+    const { error: unwindErr } = await db.from('policies').delete().eq('id', policy.id);
+    if (unwindErr) throw new Error('solvency_recheck_failed_and_unwind_failed: ' + unwindErr.message);
     throw new Error('solvency_recheck_failed');
   }
   await db.from('quotes').update({ status: 'bound' }).eq('id', quote.id);
@@ -162,11 +168,29 @@ export async function markClaimPaid(claimId: string, txHash: string): Promise<vo
     .update({ status: 'paid', tx_hash: txHash, paid_at: new Date().toISOString() })
     .eq('id', claimId).eq('status', 'pending').select('policy_id, amount_usdt').maybeSingle();
   if (error) throw error;
-  if (!claim) return; // zero rows updated → claim already paid; do not double-write the payout ledger event
+  if (!claim) {
+    // Zero rows updated: claim missing, or already paid. Self-heal the case where a prior
+    // attempt committed the UPDATE but died before the ledger insert (would under-debit forever).
+    const { data: existing, error: lookupErr } = await db.from('claims')
+      .select('policy_id, amount_usdt, status').eq('id', claimId).maybeSingle();
+    if (lookupErr) throw lookupErr;
+    if (!existing) throw new Error('claim_not_found');
+    if (existing.status === 'paid') {
+      const { error: healErr } = await db.from('ledger_events').insert({
+        kind: 'payout', amount_usdt: -num(existing.amount_usdt), policy_id: existing.policy_id, tx_hash: txHash,
+      });
+      // one_payout_per_policy makes 23505 an exact "already debited" signal → idempotent success.
+      if (healErr && healErr.code !== '23505') throw healErr;
+    }
+    return;
+  }
   const { error: e2 } = await db.from('ledger_events').insert({
     kind: 'payout', amount_usdt: -num(claim.amount_usdt), policy_id: claim.policy_id, tx_hash: txHash,
   });
-  if (e2) throw e2;
+  if (e2) {
+    if (e2.code === '23505') return; // payout already ledgered (one_payout_per_policy) — mirror openClaim
+    throw e2;
+  }
 }
 
 export async function markPolicy(policyId: string, status: PolicyStatus): Promise<void> {
