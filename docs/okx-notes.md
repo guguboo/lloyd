@@ -9,7 +9,24 @@ Source: official `okx/onchainos-skills` (v4.2.0) installed globally at `~/.agent
 - Roles: `user` / `asp` / `evaluator`. **One identity per role per wallet address.** Evaluators stake to be assigned disputes — confirms the spec's staked-dispute-network assumption.
 - **Skill gate:** every session must run `~/.agents/skills/okx-agentic-wallet/_shared/preflight.md` before the first `onchainos` command. Non-negotiable per skill.
 
-## 1. Unknown #1 — variable per-call pricing → **PARTIALLY RESOLVED, bracket fallback stays**
+## 0.5. Registration completed 2026-07-09 (Task 0)
+
+- **Lloyd ASP agent id: #4731** · wallet "Account 1" (email login vicopratama449@gmail.com)
+- EVM address: `0xbf5698cfe8b3a4bc803951642e87b0db07b7be3f` (X Layer — treasury + payouts)
+- Solana address: `DpVo3ZtvLUdECG3TnbEBMXXasiMDWkayL8f8ercQtfCf` (unused for Lloyd v1)
+- ⚠️ Wallet balance $0.00 — fund before Task 9 ($1 transfer test) and Task 13 (treasury seed, USDT on X Layer).
+- X handle: not yet claimed (needed by Task 14 only).
+
+## 1. Unknown #1 — variable per-call pricing → **RESOLVED: NO — fixed price per call (screenshot from ASP registration UI)**
+
+Official pricing table: **A2A = "Negotiated or fixed price per task"** (escrow on XLayer, released on user approval) · **A2MCP = "Fixed price per call"** (settled instantly via OKX Payment SDK). One ASP can create multiple services of both types.
+
+**DECISION (2026-07-09, user-approved "go ahead if possible with current schema"): fixed-premium tiers with risk-adjusted coverage.**
+- Tiers (listed as fixed-price A2MCP services/tools): **Skiff $0.75 · Frigate $1.50 · Galleon $3.50**
+- `coverage = min(tierPrice / rate(riskClass), 0.8 × jobValue, $50 global cap, $10 newcomer cap)` — same rates A 3% / B 7% / C 15%, same actuarial expected-loss math; we quantize premium instead of coverage.
+- `get_quote` recommends the cheapest sufficient tier; `bind` is the paid call at the tier's listed price.
+- Demo math: $20 job, class B → Frigate $1.50 → coverage $16 (80% cap binds). Payout unchanged at 16 USDT.
+- ⚠️ Listing-time details for Task 13: is fee $0 allowed for a quote service; does the fee attach per service endpoint or per tool.
 
 A2MCP billing is **x402**: the seller's endpoint returns HTTP 402 with a payment challenge (`PAYMENT-REQUIRED` header, v2); the buyer's CLI signs and replays with an authorization header. Supported schemes: `exact`, `exact+Permit2`, **`upto` (metered billing — variable!)**, `aggr_deferred`, `period` (subscriptions), plus `charge`/`session` channels and **`a2a-pay` payment links** (`onchainos payment a2a-pay create --amount --recipient` → link → buyer pays → `status` poll).
 
