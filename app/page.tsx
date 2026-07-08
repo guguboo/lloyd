@@ -1,6 +1,6 @@
 import { getLedgerStats, recentActivity } from '@/lib/store';
 
-export const revalidate = 30; // refresh every 30s
+export const dynamic = 'force-dynamic'; // render per request — live ledger, no build-time DB dependency
 
 const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
