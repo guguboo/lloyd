@@ -76,6 +76,21 @@ export async function bindQuote(quoteId: string, tier: Tier, jobRef: string, dea
     premium_usdt: premium, deadline_at: deadlineAt,
   }).select('*').single();
   if (error) throw error;
+  // Over-commit recheck: re-read outstanding coverage (incl. this just-inserted policy) vs pool
+  // BEFORE any money event, so the compensating delete undoes the insert cleanly if we breach.
+  // ponytail: optimistic recheck, not serialization — worst case one spurious refusal under concurrency; advisory locks if bind volume ever matters.
+  const [{ data: activeRows, error: activeErr }, { data: ledgerRows, error: ledgerReadErr }] = await Promise.all([
+    db.from('policies').select('coverage_usdt').in('status', ['active', 'claim_pending']),
+    db.from('ledger_events').select('amount_usdt'),
+  ]);
+  if (activeErr) throw activeErr;
+  if (ledgerReadErr) throw ledgerReadErr;
+  const outstanding = (activeRows ?? []).reduce((s, r) => s + num(r.coverage_usdt), 0);
+  const pool = (ledgerRows ?? []).reduce((s, r) => s + num(r.amount_usdt), 0);
+  if (outstanding > 0.5 * pool) {
+    await db.from('policies').delete().eq('id', policy.id);
+    throw new Error('solvency_recheck_failed');
+  }
   await db.from('quotes').update({ status: 'bound' }).eq('id', quote.id);
   const { error: ledgerErr } = await db.from('ledger_events').insert({
     kind: 'premium', amount_usdt: premium, policy_id: policy.id,
@@ -92,13 +107,20 @@ export async function getPolicy(policyId: string): Promise<PolicyRow | null> {
 }
 
 export async function getBindContext(buyerWallet: string, providerId: string) {
-  const [{ data: ledger }, { data: active }, { data: claims }] = await Promise.all([
+  const [
+    { data: ledger, error: ledgerErr },
+    { data: active, error: activeErr },
+    { data: claims, error: claimsErr },
+  ] = await Promise.all([
     db.from('ledger_events').select('amount_usdt'),
     db.from('policies').select('provider_id, buyer_wallet, coverage_usdt').in('status', ['active', 'claim_pending']),
     db.from('claims').select('id, status, paid_at, policies!inner(buyer_wallet)')
       .eq('status', 'paid').eq('policies.buyer_wallet', buyerWallet)
       .gte('paid_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()),
   ]);
+  if (ledgerErr) throw ledgerErr;
+  if (activeErr) throw activeErr;
+  if (claimsErr) throw claimsErr;
   const poolUsdt = (ledger ?? []).reduce((s, r) => s + num(r.amount_usdt), 0);
   const rows = active ?? [];
   return {
@@ -138,8 +160,9 @@ export async function openClaim(
 export async function markClaimPaid(claimId: string, txHash: string): Promise<void> {
   const { data: claim, error } = await db.from('claims')
     .update({ status: 'paid', tx_hash: txHash, paid_at: new Date().toISOString() })
-    .eq('id', claimId).select('policy_id, amount_usdt').single();
+    .eq('id', claimId).eq('status', 'pending').select('policy_id, amount_usdt').maybeSingle();
   if (error) throw error;
+  if (!claim) return; // zero rows updated → claim already paid; do not double-write the payout ledger event
   const { error: e2 } = await db.from('ledger_events').insert({
     kind: 'payout', amount_usdt: -num(claim.amount_usdt), policy_id: claim.policy_id, tx_hash: txHash,
   });
@@ -152,14 +175,22 @@ export async function markPolicy(policyId: string, status: PolicyStatus): Promis
 }
 
 export async function getLedgerStats() {
-  const [{ data: ledger }, { count: written }, { count: paid }] = await Promise.all([
+  const [
+    { data: ledger, error: ledgerErr },
+    { count: written, error: writtenErr },
+    { count: paid, error: paidErr },
+  ] = await Promise.all([
     db.from('ledger_events').select('amount_usdt, kind'),
     db.from('policies').select('id', { count: 'exact', head: true }),
     db.from('claims').select('id', { count: 'exact', head: true }).eq('status', 'paid'),
   ]);
+  if (ledgerErr) throw ledgerErr;
+  if (writtenErr) throw writtenErr;
+  if (paidErr) throw paidErr;
   const rows = ledger ?? [];
-  const { data: active } = await db.from('policies')
+  const { data: active, error: activeErr } = await db.from('policies')
     .select('coverage_usdt').in('status', ['active', 'claim_pending']);
+  if (activeErr) throw activeErr;
   return {
     poolUsdt: rows.reduce((s, r) => s + num(r.amount_usdt), 0),
     outstandingUsdt: (active ?? []).reduce((s, r) => s + num(r.coverage_usdt), 0),
@@ -169,9 +200,14 @@ export async function getLedgerStats() {
 }
 
 export async function recentActivity() {
-  const [{ data: policies }, { data: claims }] = await Promise.all([
+  const [
+    { data: policies, error: policiesErr },
+    { data: claims, error: claimsErr },
+  ] = await Promise.all([
     db.from('policies').select('*').order('created_at', { ascending: false }).limit(20),
     db.from('claims').select('*').order('created_at', { ascending: false }).limit(20),
   ]);
+  if (policiesErr) throw policiesErr;
+  if (claimsErr) throw claimsErr;
   return { policies: (policies ?? []) as PolicyRow[], claims: (claims ?? []) as ClaimRow[] };
 }
