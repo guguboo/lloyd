@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+/* ── The Underwriting Room ─────────────────────────────────────────────
+   Petrol-ink candlelit room, one verdigris accent, frosted policy slips.
+   OKLCH throughout; neutrals tinted toward the harbor-at-night hue (205). */
+@theme {
+  --color-ink:           oklch(0.16 0.020 205);
+  --color-ink-raised:    oklch(0.19 0.022 205);
+  --color-ink-sunk:      oklch(0.13 0.018 205);
+  --color-parchment:     oklch(0.94 0.012 85);
+  --color-muted:         oklch(0.70 0.015 200);
+  --color-faint:         oklch(0.55 0.014 200);
+  --color-verdigris:     oklch(0.72 0.110 175);
+  --color-verdigris-lit: oklch(0.82 0.120 172);
+  --color-hairline:      oklch(0.72 0.110 175 / 0.16);
+  --color-brass:         oklch(0.70 0.090 70);
+  --color-terracotta:    oklch(0.62 0.100 40);
+
+  --font-display: var(--font-caslon), Georgia, serif;
+  --font-sans:    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-slip: 16px;
+
+  --ease-underwrite: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: dark; }
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Glass = the public books. You read live truth *through* it.
+   Used only on live-data containers, never on the page base or buttons. */
+.glass {
+  background: oklch(0.26 0.028 205 / 0.38);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid var(--color-hairline);
+  box-shadow:
+    inset 0 1px 0 oklch(0.9 0.02 175 / 0.06),
+    0 12px 40px oklch(0.10 0.02 205 / 0.45);
+  border-radius: var(--radius-slip);
+}
+.glass-quiet {
+  background: oklch(0.22 0.024 205 / 0.30);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  backdrop-filter: blur(12px) saturate(1.05);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-slip);
+}
+
+/* Numerals that must line up in ledgers */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Faint verdigris ring pulse on a live status dot */
+@keyframes lloyd-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 oklch(0.82 0.12 172 / 0.5); }
+  50%      { opacity: 0.65; box-shadow: 0 0 0 5px oklch(0.82 0.12 172 / 0); }
+}
+.live-dot { animation: lloyd-pulse 2.4s var(--ease-underwrite) infinite; }
+
+/* One-shot glow when a claim reads "paid" */
+@keyframes lloyd-settle {
+  0%   { background: oklch(0.72 0.11 175 / 0.18); }
+  100% { background: oklch(0.72 0.11 175 / 0); }
+}
+.settled { animation: lloyd-settle 1.6s var(--ease-underwrite) 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot, .settled { animation: none; }
+}
+
+/* Lloyd's List — the original shipping ticker, rebuilt. Used once, purposefully. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.marquee-track {
+  display: inline-flex;
+  width: max-content;
+  animation: lloyd-marquee var(--marquee-duration, 46s) linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes lloyd-marquee { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+/* Ledger rows settle in on first paint; `backwards` holds the from-state through the stagger delay. */
+.row-in { animation: lloyd-row-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+@keyframes lloyd-row-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .row-in { animation: none; } }
+
+/* ── Live background: drifting verdigris aurora behind the grid ────────── */
+.aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.5;
+  will-change: transform;
+  pointer-events: none;
+}
+@keyframes lloyd-drift-1 {
+  0%,100% { transform: translate3d(0,0,0) scale(1); }
+  50%     { transform: translate3d(6vw,4vh,0) scale(1.12); }
+}
+@keyframes lloyd-drift-2 {
+  0%,100% { transform: translate3d(0,0,0) scale(1.05); }
+  50%     { transform: translate3d(-5vw,-3vh,0) scale(0.92); }
+}
+@keyframes lloyd-drift-3 {
+  0%,100% { transform: translate3d(0,0,0) scale(0.95); }
+  50%     { transform: translate3d(4vw,-5vh,0) scale(1.15); }
+}
+.drift-1 { animation: lloyd-drift-1 26s ease-in-out infinite; }
+.drift-2 { animation: lloyd-drift-2 34s ease-in-out infinite; }
+.drift-3 { animation: lloyd-drift-3 30s ease-in-out infinite; }
+
+/* Interactive glass: lifts and takes the candle on hover */
+.glass-hover {
+  transition: transform 0.3s var(--ease-underwrite), border-color 0.3s var(--ease-underwrite),
+    box-shadow 0.3s var(--ease-underwrite);
+}
+.glass-hover:hover {
+  transform: translateY(-3px);
+  border-color: oklch(0.72 0.11 175 / 0.4);
+  box-shadow:
+    inset 0 1px 0 oklch(0.9 0.02 175 / 0.10),
+    0 18px 50px oklch(0.10 0.02 205 / 0.5),
+    0 0 0 1px oklch(0.72 0.11 175 / 0.12);
+}
+
+/* Line-clip reveal wrapper for headline entrance.
+   padding-bottom + negative margin leaves room for descenders (g, y) so the
+   overflow-hidden clip never slices them, without changing the vertical rhythm. */
+.clip-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
+/* Dashed flow path draw (transaction visualization) */
+@keyframes lloyd-flow-dash { to { stroke-dashoffset: 0; } }
+@keyframes lloyd-flow-run { to { offset-distance: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-1, .drift-2, .drift-3 { animation: none; }
+  .glass-hover { transition: none; }
+}
+
+::selection { background: oklch(0.72 0.11 175 / 0.28); color: var(--color-parchment); }
+
+/* Thin verdigris scrollbar, keeps the room dark */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: oklch(0.72 0.11 175 / 0.22); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }

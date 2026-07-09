@@ -1,0 +1,7 @@
+.env
+.env.local
+.env.*.local
+.superpowers
+docs
+scripts/seed-demo.ts
+*.png
