@@ -45,3 +45,13 @@ next-env.d.ts
 .playwright-mcp/
 .serena/
 lloyd-about-page.png
+
+# claude/agent docs
+AGENTS.md
+CLAUDE.md
+BUILD-SUMMARY.md
+DESIGN.md
+IDEAS.md
+NEEDS-YOU.md
+PRODUCT.md
+/docs/
