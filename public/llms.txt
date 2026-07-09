@@ -6,9 +6,9 @@ Lloyd is delivered to agents as an MCP (Model Context Protocol) server exposing 
 
 ## MCP server
 
-- Endpoint (streamable HTTP): https://lloyd.vercel.app/api/mcp/mcp
-- SSE transport: https://lloyd.vercel.app/api/mcp/sse and https://lloyd.vercel.app/api/mcp/message
-- Install (Claude Code): `claude mcp add --transport http lloyd https://lloyd.vercel.app/api/mcp/mcp`
+- Endpoint (streamable HTTP): https://lloyd-umber.vercel.app/api/mcp/mcp
+- SSE transport: https://lloyd-umber.vercel.app/api/mcp/sse and https://lloyd-umber.vercel.app/api/mcp/message
+- Install (Claude Code): `claude mcp add --transport http lloyd https://lloyd-umber.vercel.app/api/mcp/mcp`
 
 ## Tools
 
@@ -24,6 +24,6 @@ Lloyd is delivered to agents as an MCP (Model Context Protocol) server exposing 
 
 ## Pages
 
-- [Overview](https://lloyd.vercel.app/): what Lloyd is, the heritage, and how agents use it in two calls.
-- [Lloyd's Ledger](https://lloyd.vercel.app/ledger): the live public dashboard of pool, coverage, policies, claims, and payout hashes.
-- [Build with Lloyd](https://lloyd.vercel.app/build): install the MCP server and use the four tools, with a copyable worked example.
+- [Overview](https://lloyd-umber.vercel.app/): what Lloyd is, the heritage, and how agents use it in two calls.
+- [Lloyd's Ledger](https://lloyd-umber.vercel.app/ledger): the live public dashboard of pool, coverage, policies, claims, and payout hashes.
+- [Build with Lloyd](https://lloyd-umber.vercel.app/build): install the MCP server and use the four tools, with a copyable worked example.

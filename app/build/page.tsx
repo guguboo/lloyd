@@ -9,7 +9,7 @@ import { WaxSeal } from '@/components/wax-seal';
 import { CopyButton } from '@/components/copy-button';
 
 // The single source of truth for the MCP endpoint. Change this one line at deploy.
-const MCP_URL = 'https://lloyd.vercel.app/api/mcp/mcp'; // TODO: swap to the production domain at deploy
+const MCP_URL = 'https://lloyd-umber.vercel.app/api/mcp/mcp';
 
 const INSTALL_CLI = `claude mcp add --transport http lloyd ${MCP_URL}`;
 
