@@ -133,8 +133,15 @@ body {
     0 0 0 1px oklch(0.72 0.11 175 / 0.12);
 }
 
-/* Line-clip reveal wrapper for headline entrance */
-.clip-line { display: block; overflow: hidden; }
+/* Line-clip reveal wrapper for headline entrance.
+   padding-bottom + negative margin leaves room for descenders (g, y) so the
+   overflow-hidden clip never slices them, without changing the vertical rhythm. */
+.clip-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
 
 /* Dashed flow path draw (transaction visualization) */
 @keyframes lloyd-flow-dash { to { stroke-dashoffset: 0; } }

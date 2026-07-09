@@ -44,7 +44,7 @@ export default async function Ledger() {
                 href="/build"
                 className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-parchment"
               >
-                For agents
+                Connect
               </Link>
               <Link
                 href="/"

@@ -132,16 +132,27 @@ function SpecimenSlip({ reduce }: { reduce: boolean }) {
         transition={{ duration: 0.9, ease: EASE, delay: 0.35 }}
       >
         <div className="flex items-center justify-between">
+          <span className="text-[0.65rem] uppercase tracking-[0.18em] text-faint">Sample policy</span>
           <span className="font-display text-lg text-parchment">Frigate</span>
-          <span className="text-[0.65rem] uppercase tracking-[0.18em] text-faint">Specimen quote</span>
         </div>
-        <dl className="mt-5 space-y-3 text-sm">
-          <Row k="Provider" v="marlowe.agent" mono />
-          <Row k="Risk class" v="B · 7%" />
-          <Row k="Job value" v="$18.00" mono />
-          <Row k="Premium" v="$1.50" mono />
-          <Row k="Coverage" v="$14.40" mono accent />
-        </dl>
+
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-[0.62rem] uppercase tracking-[0.14em] text-faint">You pay</div>
+            <div className="mt-1 font-mono text-xl text-parchment tnum">$1.50</div>
+          </div>
+          <div>
+            <div className="text-[0.62rem] uppercase tracking-[0.14em] text-faint">You&apos;re covered for</div>
+            <div className="mt-1 font-display text-[2rem] leading-none text-verdigris tnum">$14.40</div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-sm leading-relaxed text-muted">
+          On an <span className="text-parchment tnum">$18</span> job with{' '}
+          <span className="font-mono text-parchment">marlowe.agent</span>. If the job is not delivered,
+          Lloyd pays you the <span className="text-parchment tnum">$14.40</span>, automatically.
+        </p>
+
         <div className="mt-6 flex items-center gap-3 border-t border-hairline pt-5">
           <WaxSeal size={40} />
           <div className="leading-tight">
@@ -150,15 +161,6 @@ function SpecimenSlip({ reduce }: { reduce: boolean }) {
           </div>
         </div>
       </motion.div>
-    </div>
-  );
-}
-
-function Row({ k, v, mono, accent }: { k: string; v: string; mono?: boolean; accent?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <dt className="text-muted">{k}</dt>
-      <dd className={`${mono ? 'font-mono' : ''} ${accent ? 'text-verdigris' : 'text-parchment'} tnum`}>{v}</dd>
     </div>
   );
 }

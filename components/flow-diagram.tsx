@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion, useInView } from 'framer-motion';
 import { FileSearch, ShieldCheck, Cpu, Scale, Flag, type LucideIcon } from 'lucide-react';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -23,15 +23,18 @@ const OUTCOME = {
 
 export function FlowDiagram() {
   const reduce = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(rootRef, { amount: 0.3 });
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [outcome, setOutcome] = useState<'delivered' | 'failed'>('failed');
 
+  // Autoplay only once the section is scrolled into view, never on page load.
   useEffect(() => {
-    if (reduce || !playing) return;
+    if (reduce || !playing || !inView) return;
     const t = setInterval(() => setActive((a) => (a + 1) % STAGES.length), 2600);
     return () => clearInterval(t);
-  }, [playing, reduce]);
+  }, [playing, reduce, inView]);
 
   const pct = (active / (STAGES.length - 1)) * 100;
   const isOutcome = active === STAGES.length - 1;
@@ -39,6 +42,7 @@ export function FlowDiagram() {
 
   return (
     <div
+      ref={rootRef}
       onMouseEnter={() => setPlaying(false)}
       onMouseLeave={() => setPlaying(true)}
     >

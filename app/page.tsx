@@ -25,7 +25,7 @@ export default function Landing() {
               href="/build"
               className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-parchment"
             >
-              For agents
+              Connect
             </Link>
             <Link
               href="/ledger"
@@ -162,17 +162,37 @@ export default function Landing() {
         </section>
 
         <footer className="flex flex-col gap-4 border-t border-hairline py-12 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 text-sm text-faint">
+          <div className="flex items-center gap-3 text-sm">
             <WaxSeal size={30} />
-            <span>Built for the OKX.AI Genesis Hackathon, July 2026.</span>
+            <div className="leading-snug">
+              <div className="text-muted">© 2026 Lloyd</div>
+              <div className="text-faint">Built for the OKX.AI Genesis Hackathon.</div>
+            </div>
           </div>
           <div className="flex items-center gap-5 text-sm">
-            <Link href="/build" className="text-muted transition-colors hover:text-parchment">For agents</Link>
+            <Link href="/build" className="text-muted transition-colors hover:text-parchment">Connect</Link>
             <Link href="/ledger" className="text-muted transition-colors hover:text-parchment">The Ledger</Link>
+            <a
+              href="https://github.com/guguboo/lloyd"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Lloyd on GitHub"
+              className="text-muted transition-colors hover:text-parchment"
+            >
+              <GithubMark />
+            </a>
           </div>
         </footer>
       </div>
     </div>
+  );
+}
+
+function GithubMark() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden>
+      <path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016.01 0c2.29-1.55 3.3-1.23 3.3-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.64-5.49 5.94.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58C20.57 22.29 24 17.8 24 12.5 24 5.87 18.63.5 12 .5z" />
+    </svg>
   );
 }
 
