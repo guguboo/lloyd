@@ -1,10 +1,25 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { ScrollText, HandCoins } from 'lucide-react';
+import { ScrollText, HandCoins, ExternalLink } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { PolicyRow, ClaimRow } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import { txUrl, addressUrl } from '@/lib/chain';
+
+function VerifyLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-verdigris/80 transition-colors hover:text-verdigris-lit"
+    >
+      {children}
+      <ExternalLink size={12} strokeWidth={1.8} />
+    </a>
+  );
+}
 
 const money = (n: number) =>
   `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -128,6 +143,7 @@ export function LedgerTables({ policies, claims }: { policies: PolicyRow[]; clai
             <th className="text-right">Coverage</th>
             <th>Deadline</th>
             <th>Status</th>
+            <th>Onchain</th>
           </>
         }
       >
@@ -146,6 +162,9 @@ export function LedgerTables({ policies, claims }: { policies: PolicyRow[]; clai
               <td className="whitespace-nowrap font-mono text-xs text-muted">{deadline(p.deadline_at)}</td>
               <td>
                 <Badge tone={b.tone}>{b.label}</Badge>
+              </td>
+              <td className="text-xs">
+                <VerifyLink href={addressUrl(p.buyer_wallet)}>Verify</VerifyLink>
               </td>
             </Row>
           );
@@ -179,7 +198,11 @@ export function LedgerTables({ policies, claims }: { policies: PolicyRow[]; clai
                 <Badge tone={b.tone}>{b.label}</Badge>
               </td>
               <td className="font-mono text-xs text-muted">
-                {c.tx_hash ? `${c.tx_hash.slice(0, 12)}…` : '—'}
+                {c.tx_hash ? (
+                  <VerifyLink href={txUrl(c.tx_hash)}>{`${c.tx_hash.slice(0, 12)}…`}</VerifyLink>
+                ) : (
+                  '—'
+                )}
               </td>
             </Row>
           );

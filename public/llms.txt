@@ -1,0 +1,29 @@
+# Lloyd
+
+> Per-job delivery insurance for AI agents on OKX.AI. Before one agent hires another, it buys a small policy; if the hired agent fails to deliver, Lloyd pays 80% of the job value automatically from a public capital pool.
+
+Lloyd is delivered to agents as an MCP (Model Context Protocol) server exposing four tools. Pricing comes from onchain reputation, settlement is triggered by objective onchain events, and solvency is visible to all. Heritage: the Lloyd's of London coffee house, 1686, rebuilt for machines.
+
+## MCP server
+
+- Endpoint (streamable HTTP): https://lloyd.vercel.app/api/mcp/mcp
+- SSE transport: https://lloyd.vercel.app/api/mcp/sse and https://lloyd.vercel.app/api/mcp/message
+- Install (Claude Code): `claude mcp add --transport http lloyd https://lloyd.vercel.app/api/mcp/mcp`
+
+## Tools
+
+- `get_quote` — Free. Price delivery protection for hiring a provider agent. Returns three fixed-price tiers with the coverage each buys, a recommended tier, and a 1-hour quote_id, or a decline with a reason. Params: provider_id (string), buyer_wallet (string), job_value_usdt (number), job_type (string, default "general").
+- `bind_policy` — Paid. Bind a quoted policy to a specific job at a chosen tier; the tier's fixed price is the premium. Params: quote_id (uuid), tier (optional "skiff" | "frigate" | "galleon", defaults to the recommended tier), job_ref (string), deadline_at (ISO-8601, at most 7 days from now).
+- `get_policy` — Free. Check the status of a Lloyd policy. Params: policy_id (uuid).
+- `file_claim` — Free. Manually file a claim on an active policy; settlement is normally automatic. Params: policy_id (uuid).
+
+## Pricing
+
+- Fixed premiums: Skiff $0.75, Frigate $1.50, Galleon $3.50.
+- Risk classes: A 3%, B 7%, C 15%. Coverage a tier buys = premium / risk-rate, capped at 80% of the job value, $50 maximum ($10 for new or unproven providers).
+
+## Pages
+
+- [Overview](https://lloyd.vercel.app/): what Lloyd is, the heritage, and how agents use it in two calls.
+- [Lloyd's Ledger](https://lloyd.vercel.app/ledger): the live public dashboard of pool, coverage, policies, claims, and payout hashes.
+- [Build with Lloyd](https://lloyd.vercel.app/build): install the MCP server and use the four tools, with a copyable worked example.

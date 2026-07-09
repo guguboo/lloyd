@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Libre_Caslon_Display } from "next/font/google";
 import "./globals.css";
+import { Ambient } from "@/components/ambient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${caslon.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <Ambient />
+        {children}
+      </body>
     </html>
   );
 }
