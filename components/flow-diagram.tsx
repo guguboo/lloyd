@@ -1,7 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useInView } from 'framer-motion';
+import { useRef, useState, type ReactNode } from 'react';
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useMotionValueEvent,
+} from 'framer-motion';
 import { FileSearch, ShieldCheck, Cpu, Scale, Flag, type LucideIcon } from 'lucide-react';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -21,82 +27,80 @@ const OUTCOME = {
   failed: { chip: 'Failed', tone: 'pay', body: 'The provider missed the deadline or lost the dispute. Lloyd pays 80% of the job value straight to the buyer\'s wallet, onchain, automatically.' },
 } as const;
 
-export function FlowDiagram() {
+export function FlowDiagram({ children }: { children?: ReactNode }) {
   const reduce = useReducedMotion();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(rootRef, { amount: 0.3 });
+  const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
-  const [playing, setPlaying] = useState(true);
   const [outcome, setOutcome] = useState<'delivered' | 'failed'>('failed');
 
-  // Autoplay only once the section is scrolled into view, never on page load.
-  useEffect(() => {
-    if (reduce || !playing || !inView) return;
-    const t = setInterval(() => setActive((a) => (a + 1) % STAGES.length), 2600);
-    return () => clearInterval(t);
-  }, [playing, reduce, inView]);
+  // The stage is a pure function of how far you've scrolled through this track: the
+  // whole block below pins in place while the stages scrub, then releases. Scroll down
+  // advances it, scroll up rewinds it.
+  const { scrollYProgress } = useScroll({ target: trackRef, offset: ['start start', 'end end'] });
+  const fill = useSpring(scrollYProgress, { stiffness: 120, damping: 26, restDelta: 0.001 });
 
-  const pct = (active / (STAGES.length - 1)) * 100;
+  useMotionValueEvent(scrollYProgress, 'change', (p) => {
+    const idx = Math.min(STAGES.length - 1, Math.max(0, Math.floor(p * STAGES.length)));
+    setActive(idx);
+  });
+
   const isOutcome = active === STAGES.length - 1;
   const stage = STAGES[active];
 
   return (
-    <div
-      ref={rootRef}
-      onMouseEnter={() => setPlaying(false)}
-      onMouseLeave={() => setPlaying(true)}
-    >
-      {/* timeline */}
-      <div className="relative">
-        <div className="absolute left-5 right-5 top-6 h-px bg-hairline" />
-        <motion.div
-          className="absolute left-5 top-6 h-px bg-verdigris"
-          style={{ maxWidth: 'calc(100% - 2.5rem)' }}
-          animate={{ width: `calc(${pct}% - ${pct / 100} * 2.5rem)` }}
-          transition={{ duration: 0.6, ease: EASE }}
-        />
-        <div className="relative flex justify-between">
-          {STAGES.map((s, i) => {
-            const Icon = s.icon;
-            const done = i <= active;
-            const current = i === active;
-            return (
-              <button
-                key={s.key}
-                onClick={() => setActive(i)}
-                className="group flex w-16 flex-col items-center gap-2 sm:w-20"
-                aria-label={s.label}
-              >
-                <motion.span
-                  className="flex h-12 w-12 items-center justify-center rounded-full border"
-                  animate={{
-                    borderColor: done ? 'oklch(0.72 0.11 175 / 0.5)' : 'oklch(0.72 0.11 175 / 0.16)',
-                    backgroundColor: done ? 'oklch(0.72 0.11 175 / 0.12)' : 'oklch(0.22 0.024 205 / 0.4)',
-                    scale: current ? 1.12 : 1,
-                    boxShadow: current ? '0 0 0 5px oklch(0.72 0.11 175 / 0.10)' : '0 0 0 0 transparent',
-                  }}
-                  transition={{ duration: 0.4, ease: EASE }}
-                >
-                  <Icon size={19} strokeWidth={1.6} className={done ? 'text-verdigris' : 'text-faint'} />
-                </motion.span>
-                <span className={`text-xs transition-colors ${current ? 'text-parchment' : 'text-faint'}`}>
-                  {s.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+    <div ref={trackRef} className="relative" style={{ height: `${STAGES.length * 40}vh` }}>
+      {/* Pinned at natural height so the heading and diagram stay together in place. */}
+      <div className="sticky top-0 py-16 sm:py-24">
+        {children}
 
-      {/* description */}
-      <div className="glass mt-8 min-h-[168px] p-6">
-        <motion.div
-          key={`${active}-${isOutcome ? outcome : ''}`}
-          initial={reduce ? false : { opacity: 0.35, y: 6 }}
-          animate={reduce ? false : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: EASE }}
-        >
-          <div className="flex flex-wrap items-center gap-3">
+        {/* timeline */}
+        <div className="relative mt-10">
+          <div className="absolute left-5 right-5 top-6 h-px bg-hairline" />
+          <motion.div
+            className="absolute left-5 right-5 top-6 h-px origin-left bg-verdigris"
+            style={{ scaleX: reduce ? active / (STAGES.length - 1) : fill }}
+          />
+          <div className="relative flex justify-between">
+            {STAGES.map((s, i) => {
+              const Icon = s.icon;
+              const done = i <= active;
+              const current = i === active;
+              return (
+                <div
+                  key={s.key}
+                  className="flex w-16 flex-col items-center gap-2 sm:w-20"
+                  aria-current={current ? 'step' : undefined}
+                >
+                  <motion.span
+                    className="flex h-12 w-12 items-center justify-center rounded-full border"
+                    animate={{
+                      borderColor: done ? 'oklch(0.72 0.11 175 / 0.5)' : 'oklch(0.72 0.11 175 / 0.16)',
+                      backgroundColor: done ? 'oklch(0.72 0.11 175 / 0.12)' : 'oklch(0.22 0.024 205 / 0.4)',
+                      scale: current ? 1.12 : 1,
+                      boxShadow: current ? '0 0 0 5px oklch(0.72 0.11 175 / 0.10)' : '0 0 0 0 transparent',
+                    }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                  >
+                    <Icon size={19} strokeWidth={1.6} className={done ? 'text-verdigris' : 'text-faint'} />
+                  </motion.span>
+                  <span className={`text-xs transition-colors ${current ? 'text-parchment' : 'text-faint'}`}>
+                    {s.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* description */}
+        <div className="glass mt-8 min-h-[168px] p-6">
+          <motion.div
+            key={`${active}-${isOutcome ? outcome : ''}`}
+            initial={reduce ? false : { opacity: 0.35, y: 6 }}
+            animate={reduce ? false : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: EASE }}
+          >
+            <div className="flex flex-wrap items-center gap-3">
               <h3 className="font-display text-2xl text-parchment">{stage.title}</h3>
               {stage.call && (
                 <code className="rounded bg-[oklch(0.72_0.11_175/0.08)] px-2 py-1 font-mono text-[0.7rem] text-verdigris">
@@ -115,26 +119,27 @@ export function FlowDiagram() {
                 </span>
               )}
             </div>
-          <p className="mt-3 max-w-[64ch] leading-relaxed text-muted">
-            {isOutcome ? OUTCOME[outcome].body : stage.body}
-          </p>
-        </motion.div>
+            <p className="mt-3 max-w-[64ch] leading-relaxed text-muted">
+              {isOutcome ? OUTCOME[outcome].body : stage.body}
+            </p>
+          </motion.div>
 
-        {isOutcome && (
-          <div className="mt-5 inline-flex rounded-full border border-hairline p-1">
-            {(['delivered', 'failed'] as const).map((o) => (
-              <button
-                key={o}
-                onClick={() => setOutcome(o)}
-                className={`rounded-full px-4 py-1.5 text-xs capitalize transition-colors ${
-                  outcome === o ? 'bg-verdigris text-ink' : 'text-muted hover:text-parchment'
-                }`}
-              >
-                {o}
-              </button>
-            ))}
-          </div>
-        )}
+          {isOutcome && (
+            <div className="mt-5 inline-flex rounded-full border border-hairline p-1">
+              {(['delivered', 'failed'] as const).map((o) => (
+                <button
+                  key={o}
+                  onClick={() => setOutcome(o)}
+                  className={`rounded-full px-4 py-1.5 text-xs capitalize transition-colors ${
+                    outcome === o ? 'bg-verdigris text-ink' : 'text-muted hover:text-parchment'
+                  }`}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

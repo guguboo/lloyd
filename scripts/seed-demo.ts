@@ -1,7 +1,9 @@
 // scripts/seed-demo.ts
 // Populates a lively, coherent public Ledger for the demo: quotes -> policies ->
-// claims -> payout ledger events, using the real tiers. Idempotent: clears prior
+// claims -> premium ledger events, using the real tiers. Idempotent: clears prior
 // demo rows (everything but the seed pool event) and rewrites them.
+// Buyer wallets are placeholders here; scripts/testnet-payouts.ts replaces each with a
+// real X Layer wallet it anchors onchain, then settles the "sending" claims.
 // Run: ./node_modules/.bin/tsx --env-file=.env.local scripts/seed-demo.ts
 import { createClient } from '@supabase/supabase-js';
 
@@ -15,14 +17,32 @@ type PolicyStatus = 'active' | 'expired' | 'claim_pending' | 'paid_out';
 const PREMIUM: Record<Tier, number> = { skiff: 0.75, frigate: 1.5, galleon: 3.5 };
 
 // [provider, buyerTag, tier, riskClass, jobValue, coverage, status, deadlineHrs]
+// Spread across 5 providers, 3 tiers, 4 statuses. Per-provider live coverage stays
+// under the 10%-of-pool cap and total outstanding under 50%.
 const POLICIES: [string, string, Tier, 'A' | 'B' | 'C', number, number, PolicyStatus, number][] = [
-  ['fletcher', 'a1', 'galleon', 'A', 60, 48.0, 'active', 72],
-  ['marlowe', 'b2', 'frigate', 'B', 22, 17.6, 'active', 48],
-  ['mallory', 'c3', 'frigate', 'B', 20, 16.0, 'active', 120],
-  ['mallory', 'd4', 'skiff', 'B', 12, 9.6, 'claim_pending', -1],
-  ['fletcher', 'e7', 'galleon', 'A', 50, 40.0, 'claim_pending', -3],
-  ['marlowe', 'f5', 'skiff', 'B', 14, 10.71, 'paid_out', -48],
-  ['fletcher', 'g6', 'frigate', 'A', 30, 24.0, 'expired', -24],
+  ['fletcher', 'p01', 'galleon', 'A', 50, 40.0, 'active', 72],
+  ['marlowe', 'p02', 'frigate', 'B', 22, 17.6, 'active', 48],
+  ['mallory', 'p03', 'frigate', 'B', 20, 16.0, 'active', 120],
+  ['corwin', 'p04', 'skiff', 'C', 12, 9.6, 'active', 36],
+  ['ashby', 'p05', 'galleon', 'A', 48, 38.4, 'active', 96],
+  ['marlowe', 'p06', 'skiff', 'B', 14, 10.71, 'active', 60],
+  ['mallory', 'p07', 'frigate', 'B', 30, 24.0, 'paid_out', -2],
+  ['fletcher', 'p08', 'skiff', 'B', 14, 10.71, 'paid_out', -48],
+  ['ashby', 'p09', 'galleon', 'A', 45, 36.0, 'paid_out', -12],
+  ['corwin', 'p10', 'frigate', 'B', 25, 20.0, 'paid_out', -24],
+  ['marlowe', 'p11', 'galleon', 'A', 42, 33.6, 'paid_out', -36],
+  ['mallory', 'p12', 'skiff', 'C', 10, 8.0, 'expired', -18],
+];
+
+// [policyTag, trigger, amount]  — all become real onchain payouts via testnet-payouts.ts.
+// Kept 'sending' (never 'pending'): a pending claim would be auto-settled by any watcher
+// run — with a fixture hash under LLOYD_MODE=fixture — leaving an unverifiable ledger row.
+const CLAIMS: [string, 'dispute_verdict' | 'delivery_timeout' | 'manual', number][] = [
+  ['p07', 'dispute_verdict', 24.0],
+  ['p08', 'dispute_verdict', 10.71],
+  ['p09', 'delivery_timeout', 36.0],
+  ['p10', 'delivery_timeout', 20.0],
+  ['p11', 'dispute_verdict', 33.6],
 ];
 
 async function main() {
@@ -34,7 +54,7 @@ async function main() {
 
   const policyIds: Record<string, string> = {};
   for (const [provider, tag, tier, risk, jobValue, coverage, status, deadlineHrs] of POLICIES) {
-    const buyer = `0x${tag}${'0'.repeat(38)}`.slice(0, 42);
+    const buyer = `0x${tag}${'0'.repeat(38)}`.slice(0, 42); // placeholder, anchored later
     const { data: q, error: qe } = await db
       .from('quotes')
       .insert({
@@ -78,15 +98,18 @@ async function main() {
     });
   }
 
-  // claims: one paid (with tx), one in-flight, two pending
-  const TX = '0x9f4c2a7e18b3d605c1e94a7b2f0d83e6a4c159d27b8e034f6a1c9d5e2b70f4a8c';
-  await db.from('claims').insert([
-    { policy_id: policyIds['f5'], trigger: 'dispute_verdict', amount_usdt: 10.71, status: 'paid', tx_hash: TX, paid_at: new Date(now).toISOString() },
-    { policy_id: policyIds['e7'], trigger: 'delivery_timeout', amount_usdt: 40.0, status: 'sending', tx_hash: null },
-    { policy_id: policyIds['d4'], trigger: 'delivery_timeout', amount_usdt: 9.6, status: 'pending', tx_hash: null },
-  ]);
-  await db.from('ledger_events').insert({ kind: 'payout', amount_usdt: -10.71, policy_id: policyIds['f5'], tx_hash: TX, note: 'payout dispute_verdict' });
+  // claims are seeded 'sending'; testnet-payouts.ts turns each into a real onchain payout
+  // (single source of settlements — no payout events here).
+  await db.from('claims').insert(
+    CLAIMS.map(([tag, trigger, amount]) => ({
+      policy_id: policyIds[tag],
+      trigger,
+      amount_usdt: amount,
+      status: 'sending',
+      tx_hash: null,
+    })),
+  );
 
-  console.log('demo activity seeded:', POLICIES.length, 'policies, 3 claims');
+  console.log(`demo activity seeded: ${POLICIES.length} policies, ${CLAIMS.length} claims`);
 }
 main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });

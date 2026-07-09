@@ -94,6 +94,11 @@ body {
 @keyframes lloyd-marquee { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
 
+/* Ledger rows settle in on first paint; `backwards` holds the from-state through the stagger delay. */
+.row-in { animation: lloyd-row-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+@keyframes lloyd-row-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .row-in { animation: none; } }
+
 /* ── Live background: drifting verdigris aurora behind the grid ────────── */
 .aurora-blob {
   position: absolute;

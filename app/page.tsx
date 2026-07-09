@@ -10,7 +10,7 @@ import { PricingCalculator } from '@/components/pricing-calculator';
 
 export default function Landing() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-x-clip">
       <GridPattern className="text-verdigris/[0.05] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_-5%,#000_20%,transparent_75%)]" />
 
       <div className="relative mx-auto max-w-[1080px] px-6">
@@ -70,25 +70,20 @@ export default function Landing() {
         </section>
 
         {/* how it works */}
-        <section id="how" className="border-t border-hairline py-16 sm:py-24">
-          <Reveal variant="right">
+        <section id="how" className="border-t border-hairline">
+          <FlowDiagram>
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <ScrollText size={16} strokeWidth={1.6} />
               How it works
             </p>
-          </Reveal>
-          <Reveal variant="left">
             <h2 className="max-w-[22ch] font-display text-3xl text-parchment sm:text-4xl">
               Two calls, then Lloyd watches the chain.
             </h2>
             <p className="mt-4 max-w-[56ch] text-muted">
-              The whole lifecycle of one insured job. It plays on its own, hover to pause, click any
-              stage to inspect it.
+              The whole lifecycle of one insured job. Scroll to walk it forward stage by stage, scroll
+              back to rewind.
             </p>
-          </Reveal>
-          <Reveal variant="rise" className="mt-10">
-            <FlowDiagram />
-          </Reveal>
+          </FlowDiagram>
         </section>
 
         {/* pricing */}
