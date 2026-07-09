@@ -1,78 +1,115 @@
+import Link from 'next/link';
 import { getLedgerStats, recentActivity } from '@/lib/store';
+import { GridPattern } from '@/components/grid-pattern';
+import { Marquee } from '@/components/marquee';
+import { StatSlip, UtilizationMeter } from '@/components/stat-slip';
+import { CountUp } from '@/components/count-up';
+import { StatusDot } from '@/components/status-dot';
+import { WaxSeal } from '@/components/wax-seal';
+import { LedgerTables } from '@/components/ledger-tables';
 
 export const dynamic = 'force-dynamic'; // render per request — live ledger, no build-time DB dependency
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money2 = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default async function Ledger() {
   const [stats, activity] = await Promise.all([getLedgerStats(), recentActivity()]);
   const utilization = stats.poolUsdt > 0 ? stats.outstandingUsdt / stats.poolUsdt : 0;
 
+  const ticker: React.ReactNode[] = [
+    ...activity.policies.slice(0, 10).map((p) => (
+      <TickerItem key={`p-${p.id}`} text={`${p.tier.toUpperCase()} · ${p.provider_id} · ${money2(Number(p.coverage_usdt))} covered`} />
+    )),
+    ...activity.claims.filter((c) => c.status === 'paid').slice(0, 8).map((c) => (
+      <TickerItem key={`c-${c.id}`} text={`PAID · ${money2(Number(c.amount_usdt))} settled`} lit />
+    )),
+  ];
+
   return (
-    <main style={{ maxWidth: 880, margin: '0 auto', padding: '3rem 1.5rem', fontFamily: 'Georgia, serif' }}>
-      <header style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{ fontSize: '2.2rem', marginBottom: 4 }}>Lloyd&apos;s Ledger</h1>
-        <p style={{ color: '#666' }}>
-          The underwriter of the agent economy — every policy, claim, and payout, in public.{' '}
-          <a href="/about">About Lloyd</a>
-        </p>
-      </header>
+    <div className="relative min-h-screen overflow-hidden">
+      <GridPattern className="text-verdigris/[0.055] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_25%,transparent_78%)]" />
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: '2.5rem' }}>
-        {[
-          ['Capital pool', `$${fmt(stats.poolUsdt)}`],
-          ['Outstanding coverage', `$${fmt(stats.outstandingUsdt)}`],
-          ['Pool utilization', `${(utilization * 100).toFixed(1)}% of 50% max`],
-          ['Policies written', String(stats.policiesWritten)],
-          ['Claims paid', String(stats.claimsPaid)],
-        ].map(([label, value]) => (
-          <div key={label} style={{ border: '1px solid #ddd', borderRadius: 8, padding: '1rem' }}>
-            <div style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
-            <div style={{ fontSize: '1.5rem', marginTop: 4 }}>{value}</div>
+      <main className="relative mx-auto max-w-[1080px] px-6 py-14 sm:py-20">
+        <header className="mb-10 flex flex-col gap-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <WaxSeal size={44} className="opacity-90" />
+              <div>
+                <h1 className="font-display text-2xl leading-none text-parchment sm:text-3xl">Lloyd&apos;s Ledger</h1>
+                <p className="mt-1 text-sm text-muted">Every policy, claim, and payout, in public.</p>
+              </div>
+            </div>
+            <Link
+              href="/about"
+              className="shrink-0 rounded-full border border-hairline px-4 py-2 text-sm text-muted transition-colors hover:border-verdigris/40 hover:text-parchment"
+            >
+              About Lloyd
+            </Link>
           </div>
-        ))}
-      </section>
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-faint">
+            <StatusDot />
+            Settlement watcher active
+          </div>
+        </header>
 
-      <h2>Recent policies</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '2rem', fontSize: '0.9rem' }}>
-        <thead><tr style={{ textAlign: 'left', borderBottom: '2px solid #333' }}>
-          <th style={{ padding: 6 }}>Policy</th><th>Provider</th><th>Tier</th><th>Coverage</th><th>Deadline</th><th>Status</th>
-        </tr></thead>
-        <tbody>
-          {activity.policies.map((p) => (
-            <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: 6, fontFamily: 'monospace' }}>{p.id.slice(0, 8)}</td>
-              <td>{p.provider_id}</td>
-              <td>{p.tier}</td>
-              <td>${fmt(Number(p.coverage_usdt))}</td>
-              <td>{new Date(p.deadline_at).toUTCString().slice(5, 22)}</td>
-              <td>{p.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        {ticker.length > 0 && (
+          <div className="glass-quiet mb-10 py-2.5">
+            <Marquee items={ticker} />
+          </div>
+        )}
 
-      <h2>Recent claims</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-        <thead><tr style={{ textAlign: 'left', borderBottom: '2px solid #333' }}>
-          <th style={{ padding: 6 }}>Claim</th><th>Trigger</th><th>Amount</th><th>Status</th><th>Tx</th>
-        </tr></thead>
-        <tbody>
-          {activity.claims.map((c) => (
-            <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: 6, fontFamily: 'monospace' }}>{c.id.slice(0, 8)}</td>
-              <td>{c.trigger}</td>
-              <td>${fmt(Number(c.amount_usdt))}</td>
-              <td>{c.status}</td>
-              <td style={{ fontFamily: 'monospace' }}>{c.tx_hash ? c.tx_hash.slice(0, 14) + '…' : '—'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <section className="mb-8 grid gap-5 lg:grid-cols-12">
+          <div className="glass flex flex-col gap-5 p-6 lg:col-span-6 lg:row-span-2">
+            <div>
+              <div className="text-[0.7rem] uppercase tracking-[0.16em] text-faint">Capital pool</div>
+              <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-muted">
+                Held in public, paid out only to claims. This is what stands behind every policy.
+              </p>
+            </div>
+            <div className="mt-auto">
+              <div className="font-display text-5xl leading-none text-parchment tnum sm:text-6xl">
+                <CountUp prefix="$" value={stats.poolUsdt} decimals={2} />
+              </div>
+              <div className="mt-5">
+                <UtilizationMeter ratio={utilization} />
+              </div>
+            </div>
+          </div>
 
-      <footer style={{ marginTop: '3rem', color: '#888', fontSize: '0.85rem' }}>
-        Solvency rules: coverage ≤ 50% of pool · ≤10% per provider · pays-once enforced in the database.
-      </footer>
-    </main>
+          <StatSlip
+            className="lg:col-span-6"
+            label="Outstanding coverage"
+            value={<CountUp prefix="$" value={stats.outstandingUsdt} decimals={2} />}
+            sub="At risk across live policies"
+          />
+          <StatSlip
+            className="lg:col-span-3"
+            label="Policies written"
+            value={<CountUp value={stats.policiesWritten} />}
+          />
+          <StatSlip
+            className="lg:col-span-3"
+            label="Claims paid"
+            value={<CountUp value={stats.claimsPaid} />}
+          />
+        </section>
+
+        <LedgerTables policies={activity.policies} claims={activity.claims} />
+
+        <footer className="mt-10 border-t border-hairline pt-5 text-sm text-faint">
+          Solvency, enforced in code: coverage never exceeds 50% of the pool, no provider above 10%, one policy per
+          buyer and provider, and every policy pays out exactly once, guaranteed by a database constraint.
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+function TickerItem({ text, lit = false }: { text: string; lit?: boolean }) {
+  return (
+    <span className="mx-6 inline-flex items-center gap-2.5">
+      <span className={lit ? 'text-verdigris-lit' : 'text-verdigris/60'}>◆</span>
+      <span className="font-mono text-xs text-muted">{text}</span>
+    </span>
   );
 }
