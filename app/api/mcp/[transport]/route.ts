@@ -11,6 +11,7 @@ import { verifyUsdtTransfer } from '@/lib/payment-proof';
 import { attestationMessage, verifyDeliveryAttestation } from '@/lib/attestation';
 import { activeNetwork, proofRequired } from '@/lib/xlayer';
 import { TREASURY } from '@/lib/chain';
+import { makeLimiter, clientIp } from '@/lib/rate-limit';
 import {
   attestDelivery, bindQuote, createQuote, getBindContext, getFraudContext, getOpenQuote,
   getPolicy, getProviderWallet, isLinked, markPolicy, openClaim,
@@ -272,17 +273,7 @@ const handler = createMcpHandler(
 // per-IP rate limit applies in every mode.
 const MODE = process.env.LLOYD_MODE ?? 'fixture';
 const API_KEY = process.env.LLOYD_API_KEY;
-const WINDOW_MS = 60_000;
-const MAX_REQ = 120;
-// ponytail: per-instance in-memory limiter — resets on cold start, not shared across
-// serverless instances. Enough to blunt one abuser; swap for a shared KV bucket if it matters.
-const hits = new Map<string, { n: number; reset: number }>();
-function overLimit(key: string): boolean {
-  const now = Date.now();
-  const e = hits.get(key);
-  if (!e || now > e.reset) { hits.set(key, { n: 1, reset: now + WINDOW_MS }); return false; }
-  return ++e.n > MAX_REQ;
-}
+const overLimit = makeLimiter(60_000, 120);
 function keyEq(a: string, b: string): boolean {
   const ba = Buffer.from(a);
   const bb = Buffer.from(b);
@@ -290,7 +281,7 @@ function keyEq(a: string, b: string): boolean {
 }
 function gate(h: (req: Request, ...rest: unknown[]) => Response | Promise<Response>) {
   return async (req: Request, ...rest: unknown[]): Promise<Response> => {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const ip = clientIp(req);
     if (overLimit(ip)) return Response.json({ error: 'rate_limited' }, { status: 429 });
     if (MODE !== 'fixture') {
       if (!API_KEY) return Response.json({ error: 'server_auth_misconfigured' }, { status: 503 });

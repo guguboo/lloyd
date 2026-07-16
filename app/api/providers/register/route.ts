@@ -9,6 +9,7 @@ import { isAddress } from 'viem';
 import { z } from 'zod';
 import { verifyRegistration } from '@/lib/attestation';
 import { supabaseAdmin as db } from '@/lib/db';
+import { makeLimiter, clientIp } from '@/lib/rate-limit';
 
 const Body = z.object({
   // Slug-ish ids only: these appear in quotes, policies, and the public ledger.
@@ -19,18 +20,10 @@ const Body = z.object({
 
 // Registration is cheap (one sig verify + one insert) but the table is forever;
 // blunt drive-by spam per instance. Same ponytail limiter as the MCP gate.
-const WINDOW_MS = 3_600_000;
-const MAX_REQ = 10;
-const hits = new Map<string, { n: number; reset: number }>();
-function overLimit(key: string): boolean {
-  const now = Date.now();
-  const e = hits.get(key);
-  if (!e || now > e.reset) { hits.set(key, { n: 1, reset: now + WINDOW_MS }); return false; }
-  return ++e.n > MAX_REQ;
-}
+const overLimit = makeLimiter(3_600_000, 10);
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const ip = clientIp(req);
   if (overLimit(ip)) return Response.json({ ok: false, error: 'rate_limited' }, { status: 429 });
 
   let body;
