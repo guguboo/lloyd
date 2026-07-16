@@ -13,5 +13,7 @@ export const authWallet = (): string | null => authStore.getStore()?.wallet ?? n
  *  unauthenticated contexts never mismatch — enforcement applies only to wallet keys. */
 export function walletMismatch(target: string): boolean {
   const w = authWallet();
-  return w !== null && target.toLowerCase() !== w;
+  // authenticateKey already lowercases, but this comparison is the money-path security
+  // boundary — normalize both sides here so the invariant never depends on a caller.
+  return w !== null && target.toLowerCase() !== w.toLowerCase();
 }
