@@ -15,6 +15,7 @@ vi.mock('@/lib/store', () => ({
   markClaimSending: vi.fn(),
   markClaimPaid: vi.fn(),
   markPolicy: vi.fn(),
+  getTodayPayoutsUsdt: vi.fn(),
 }));
 
 import * as store from '@/lib/store';
@@ -61,6 +62,7 @@ const m = {
   markClaimSending: vi.mocked(store.markClaimSending),
   markClaimPaid: vi.mocked(store.markClaimPaid),
   markPolicy: vi.mocked(store.markPolicy),
+  getTodayPayoutsUsdt: vi.mocked(store.getTodayPayoutsUsdt),
 };
 
 beforeEach(() => {
@@ -74,6 +76,7 @@ beforeEach(() => {
   m.markClaimSending.mockResolvedValue(true);
   m.markClaimPaid.mockResolvedValue(undefined);
   m.markPolicy.mockResolvedValue(undefined);
+  m.getTodayPayoutsUsdt.mockResolvedValue(0);
 });
 
 describe('runSettlement — pass-2 two-phase payout semantics (D7.4)', () => {
@@ -309,5 +312,37 @@ describe('runSettlement — pass-2 two-phase payout semantics (D7.4)', () => {
     expect(treasury.sendUsdt).toHaveBeenCalledTimes(1);
     expect(m.markClaimPaid).toHaveBeenCalledWith('clm-1', '0xOK');
     expect(report.paidOut).toEqual(['pol-1']);
+  });
+});
+
+describe('daily spend cap', () => {
+  beforeEach(() => { vi.unstubAllEnvs(); });
+
+  it('a claim that would breach the cap is skipped and stays pending', async () => {
+    vi.stubEnv('TREASURY_DAILY_CAP_USDT', '25');
+    m.getActivePolicies.mockResolvedValue([]);
+    m.getStuckSendingClaims.mockResolvedValue([]);
+    m.getPendingClaims.mockResolvedValue([makeClaim({ amount_usdt: 16 })]);
+    m.getPolicy.mockResolvedValue(makePolicy());
+    m.getTodayPayoutsUsdt.mockResolvedValue(10); // 10 + 16 > 25
+    const treasury = makeTreasury();
+    const report = await runSettlement(makeJobs({}), treasury, beforeDeadline);
+    expect(treasury.sendUsdt).not.toHaveBeenCalled();
+    expect(m.markClaimSending).not.toHaveBeenCalled();
+    expect(report.errors).toEqual([{ policyId: 'pol-1', error: 'daily_spend_cap_reached' }]);
+  });
+
+  it('exactly at the cap still pays (only exceeding blocks)', async () => {
+    vi.stubEnv('TREASURY_DAILY_CAP_USDT', '26');
+    m.getActivePolicies.mockResolvedValue([]);
+    m.getStuckSendingClaims.mockResolvedValue([]);
+    m.getPendingClaims.mockResolvedValue([makeClaim({ amount_usdt: 16 })]);
+    m.getPolicy.mockResolvedValue(makePolicy());
+    m.getTodayPayoutsUsdt.mockResolvedValue(10); // 10 + 16 == 26 → allowed
+    m.markClaimSending.mockResolvedValue(true);
+    const treasury = makeTreasury();
+    const report = await runSettlement(makeJobs({}), treasury, beforeDeadline);
+    expect(treasury.sendUsdt).toHaveBeenCalledTimes(1);
+    expect(report.errors).toEqual([]);
   });
 });

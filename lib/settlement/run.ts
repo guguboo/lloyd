@@ -2,7 +2,7 @@ import type { JobMonitor, Treasury } from '../okx/types';
 import { decideSettlement } from './decide';
 import {
   getActivePolicies, getPendingClaims, getStuckSendingClaims, getPolicy,
-  markClaimSending, markClaimPaid, markPolicy, openClaim,
+  markClaimSending, markClaimPaid, markPolicy, openClaim, getTodayPayoutsUsdt,
 } from '../store';
 
 export interface SettlementReport {
@@ -60,6 +60,15 @@ export async function runSettlement(
         const state = await jobs.getJobState(policy);
         const action = decideSettlement(state, new Date(policy.deadline_at), now);
         if (action !== 'payout_dispute' && action !== 'payout_timeout') continue; // not (yet) payable
+      }
+      // Daily spend ceiling (ops backstop): a runaway day stops at the cap instead of
+      // draining to the solvency limit. Re-read per claim so payouts landing within
+      // this run count. Claim stays 'pending' — retries after UTC midnight.
+      const cap = Number(process.env.TREASURY_DAILY_CAP_USDT ?? 25);
+      const spentToday = await getTodayPayoutsUsdt();
+      if (spentToday + Number(c.amount_usdt) > cap) {
+        report.errors.push({ policyId: c.policy_id, error: 'daily_spend_cap_reached' });
+        continue;
       }
       // Pre-flight funds/gas BEFORE the CAS. A proven shortfall leaves the claim
       // 'pending' (retried next run once the treasury is topped up) instead of moving it

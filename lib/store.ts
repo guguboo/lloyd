@@ -350,3 +350,13 @@ export async function recentActivity() {
   if (claimsErr) throw claimsErr;
   return { policies: (policies ?? []) as PolicyRow[], claims: (claims ?? []) as ClaimRow[] };
 }
+
+/** Absolute USDT paid out since UTC midnight — the daily-cap denominator. */
+export async function getTodayPayoutsUsdt(): Promise<number> {
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const { data, error } = await db.from('ledger_events')
+    .select('amount_usdt').eq('kind', 'payout').gte('created_at', dayStart.toISOString());
+  if (error) throw error;
+  return (data ?? []).reduce((s, r) => s + Math.abs(num(r.amount_usdt)), 0);
+}
