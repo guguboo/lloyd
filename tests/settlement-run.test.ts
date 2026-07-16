@@ -345,4 +345,17 @@ describe('daily spend cap', () => {
     expect(treasury.sendUsdt).toHaveBeenCalledTimes(1);
     expect(report.errors).toEqual([]);
   });
+
+  it('a malformed cap env falls back to the $50 default instead of disabling the cap', async () => {
+    vi.stubEnv('TREASURY_DAILY_CAP_USDT', '$25 USDT'); // Number(...) → NaN
+    m.getActivePolicies.mockResolvedValue([]);
+    m.getStuckSendingClaims.mockResolvedValue([]);
+    m.getPendingClaims.mockResolvedValue([makeClaim({ amount_usdt: 16 })]);
+    m.getPolicy.mockResolvedValue(makePolicy());
+    m.getTodayPayoutsUsdt.mockResolvedValue(40); // 40 + 16 > 50 default → blocked
+    const treasury = makeTreasury();
+    const report = await runSettlement(makeJobs({}), treasury, beforeDeadline);
+    expect(treasury.sendUsdt).not.toHaveBeenCalled();
+    expect(report.errors).toEqual([{ policyId: 'pol-1', error: 'daily_spend_cap_reached' }]);
+  });
 });

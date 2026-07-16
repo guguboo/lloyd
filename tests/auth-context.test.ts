@@ -1,6 +1,6 @@
 // tests/auth-context.test.ts
 import { describe, it, expect } from 'vitest';
-import { authStore, authWallet, walletMismatch } from '@/lib/auth-context';
+import { authStore, authWallet, hasAuthContext, walletMismatch } from '@/lib/auth-context';
 
 const W = '0xabcdef0000000000000000000000000000000001';
 
@@ -22,5 +22,11 @@ describe('auth context', () => {
       expect(walletMismatch(W.toUpperCase().replace('0X', '0x'))).toBe(false);
       expect(walletMismatch('0x1111111111111111111111111111111111111111')).toBe(true);
     });
+  });
+
+  it('hasAuthContext: false outside any gate, true inside (master or wallet)', () => {
+    expect(hasAuthContext()).toBe(false);
+    authStore.run({ wallet: null, master: true }, () => expect(hasAuthContext()).toBe(true));
+    authStore.run({ wallet: W, master: false }, () => expect(hasAuthContext()).toBe(true));
   });
 });

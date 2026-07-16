@@ -11,7 +11,7 @@ import { verifyUsdtTransfer } from '@/lib/payment-proof';
 import { attestationMessage, verifyDeliveryAttestation } from '@/lib/attestation';
 import { activeNetwork, proofRequired } from '@/lib/xlayer';
 import { TREASURY } from '@/lib/chain';
-import { walletMismatch } from './auth-context';
+import { hasAuthContext, walletMismatch } from './auth-context';
 import {
   attestDelivery, bindQuote, createQuote, getBindContext, getFraudContext, getOpenQuote,
   getPolicy, getProviderWallet, isLinked, markPolicy, openClaim,
@@ -160,6 +160,7 @@ export function registerPaidTools(server: Srv): void {
       deadline_at: z.string().datetime().describe('ISO-8601 delivery deadline; max 7 days from now'),
     },
     guard(async ({ quote_id, tier, job_ref, job_tx, premium_tx, deadline_at }) => {
+      if (!hasAuthContext()) return json({ ok: false, error: 'unauthenticated' });
       const quote = await getOpenQuote(quote_id);
       if (!quote) return json({ ok: false, error: 'quote_not_open_or_expired' });
 
@@ -261,6 +262,7 @@ export function registerPaidTools(server: Srv): void {
     'Manually file a claim on an active policy (normally settlement is automatic).',
     { policy_id: z.string().uuid() },
     guard(async ({ policy_id }) => {
+      if (!hasAuthContext()) return json({ ok: false, error: 'unauthenticated' });
       const p = await getPolicy(policy_id);
       if (!p) return json({ ok: false, error: 'not_found' });
       if (walletMismatch(p.buyer_wallet)) return json({ ok: false, error: 'not_your_policy' });

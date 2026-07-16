@@ -21,6 +21,12 @@ export async function runSettlement(
   // pulling the cron. Distinct from KILL_SWITCH, which only blocks new binds.
   if (process.env.SETTLEMENT_PAUSED === 'true') return report;
 
+  // Daily payout ceiling. Fail SAFE on misconfiguration: a non-numeric value falls back
+  // to the default instead of NaN-disabling the cap. Default matches MAX_COVERAGE_USDT
+  // so no legitimate single claim is unpayable on a fresh day.
+  const rawCap = Number(process.env.TREASURY_DAILY_CAP_USDT);
+  const dailyCap = Number.isFinite(rawCap) && rawCap >= 0 ? rawCap : 50;
+
   // Pass 1: active policies → decide → open claims / expire
   for (const p of await getActivePolicies()) {
     report.checked++;
@@ -64,9 +70,8 @@ export async function runSettlement(
       // Daily spend ceiling (ops backstop): a runaway day stops at the cap instead of
       // draining to the solvency limit. Re-read per claim so payouts landing within
       // this run count. Claim stays 'pending' — retries after UTC midnight.
-      const cap = Number(process.env.TREASURY_DAILY_CAP_USDT ?? 25);
       const spentToday = await getTodayPayoutsUsdt();
-      if (spentToday + Number(c.amount_usdt) > cap) {
+      if (spentToday + Number(c.amount_usdt) > dailyCap) {
         report.errors.push({ policyId: c.policy_id, error: 'daily_spend_cap_reached' });
         continue;
       }

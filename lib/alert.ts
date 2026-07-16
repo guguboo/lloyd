@@ -7,6 +7,7 @@ export async function sendAlert(text: string): Promise<void> {
     await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
+      signal: AbortSignal.timeout(5_000),
       // Discord reads `content`, Slack reads `text`; each ignores the other's field.
       body: JSON.stringify({ content: text, text }),
     });

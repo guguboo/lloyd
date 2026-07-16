@@ -9,7 +9,7 @@ import { registerFreeTools } from '@/lib/mcp-tools';
 const handler = createMcpHandler(
   (server) => registerFreeTools(server),
   undefined,
-  { basePath: '/api/quote' }, // → /api/quote/mcp, /api/quote/sse, /api/quote/message
+  { basePath: '/api/quote', disableSse: true }, // → /api/quote/mcp, /api/quote/sse, /api/quote/message
 );
 
 const overLimit = makeLimiter(60_000, 120);

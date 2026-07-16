@@ -9,6 +9,10 @@ export const authStore = new AsyncLocalStorage<AuthCtx>();
 /** The authenticated wallet (lowercase), or null for master key / open endpoint / fixture. */
 export const authWallet = (): string | null => authStore.getStore()?.wallet ?? null;
 
+/** True iff a gate established ANY auth context (master or wallet). Paid tools require
+ *  this: a paid registrar composed onto a route without the gate must fail closed. */
+export const hasAuthContext = (): boolean => authStore.getStore() !== undefined;
+
 /** True iff a wallet-keyed caller is trying to act for a DIFFERENT wallet. Master and
  *  unauthenticated contexts never mismatch — enforcement applies only to wallet keys. */
 export function walletMismatch(target: string): boolean {
