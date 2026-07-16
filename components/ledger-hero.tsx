@@ -14,9 +14,9 @@ const money2 = (n: number) =>
 const LIVE: PolicyRow['status'][] = ['active', 'claim_pending'];
 
 // The hero sticks to the selected wallet, and every figure is derived from the real
-// onchain data shown below. The reserve is each wallet's live OKB balance; outstanding,
-// counts, and the ticker come from the onchain-anchored policies and settled claims.
-// Mainnet is the reserved production identity with nothing onchain yet, so all zero.
+// onchain data shown below. The reserve is each wallet's live USDT balance — the asset
+// payouts are actually drawn from; outstanding, counts, and the ticker come from the
+// policies and settled claims. Mainnet is the reserved production identity, so all zero.
 export function LedgerHero({
   balances,
   policies,
@@ -28,7 +28,8 @@ export function LedgerHero({
 }) {
   const { network } = useNetwork();
   const testnet = network === 'testnet';
-  const reserve = balances[network]; // live OKB balance, or null if the RPC was unreachable
+  const bal = balances[network];
+  const reserve = bal.usdt; // live USDT balance (the payout asset), or null if the RPC was unreachable
   const outstanding = testnet
     ? policies.filter((p) => LIVE.includes(p.status)).reduce((s, p) => s + Number(p.coverage_usdt), 0)
     : 0;
@@ -66,7 +67,7 @@ export function LedgerHero({
             <div className="text-[0.7rem] uppercase tracking-[0.16em] text-faint">Settlement reserve</div>
             <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-muted">
               {testnet
-                ? 'The live balance of Lloyd’s settlement wallet, read straight from X Layer. Every payout is drawn from here.'
+                ? 'The live USDT balance of Lloyd’s settlement wallet, read straight from X Layer. Every payout is a real USDT transfer drawn from here.'
                 : 'Lloyd’s production wallet on X Layer mainnet, live and verifiable. Not yet funded.'}
             </p>
           </div>
@@ -75,13 +76,13 @@ export function LedgerHero({
               {reserve === null ? (
                 <span className="text-muted">—</span>
               ) : (
-                <CountUp value={reserve} decimals={4} suffix=" OKB" />
+                <CountUp prefix="$" value={reserve} decimals={2} />
               )}
             </div>
             <p className="mt-3 text-xs text-faint">
               {reserve === null
                 ? 'Balance temporarily unavailable — verify directly onchain.'
-                : `Live balance · X Layer ${testnet ? 'testnet · nominal demo funds' : 'mainnet'}`}
+                : `USDT · X Layer ${testnet ? 'testnet' : 'mainnet'}${bal.okb !== null ? ` · gas ${bal.okb.toFixed(2)} OKB` : ''}`}
             </p>
             <PoolAnchor />
           </div>
@@ -95,7 +96,7 @@ export function LedgerHero({
         />
         <StatSlip
           className="glass-hover lg:col-span-3"
-          label="Policies onchain"
+          label="Policies"
           value={<CountUp value={policiesOnchain} />}
         />
         <StatSlip

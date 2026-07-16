@@ -17,11 +17,15 @@ export async function runSettlement(
 ): Promise<SettlementReport> {
   const report: SettlementReport = { checked: 0, paidOut: [], expired: [], errors: [] };
 
+  // Settlement kill switch (M-6): halt ALL settlement instantly on an incident, without
+  // pulling the cron. Distinct from KILL_SWITCH, which only blocks new binds.
+  if (process.env.SETTLEMENT_PAUSED === 'true') return report;
+
   // Pass 1: active policies → decide → open claims / expire
   for (const p of await getActivePolicies()) {
     report.checked++;
     try {
-      const state = await jobs.getJobState(p.job_ref);
+      const state = await jobs.getJobState(p);
       const action = decideSettlement(state, new Date(p.deadline_at), now);
       if (action === 'wait') continue;
       if (action === 'expire') { await markPolicy(p.id, 'expired'); report.expired.push(p.id); continue; }
@@ -53,9 +57,16 @@ export async function runSettlement(
         // manual claims are verified against job state before paying — this stays
         // BEFORE the pending→sending transition: never move a claim to 'sending'
         // unless it is actually payable right now.
-        const state = await jobs.getJobState(policy.job_ref);
+        const state = await jobs.getJobState(policy);
         const action = decideSettlement(state, new Date(policy.deadline_at), now);
         if (action !== 'payout_dispute' && action !== 'payout_timeout') continue; // not (yet) payable
+      }
+      // Pre-flight funds/gas BEFORE the CAS. A proven shortfall leaves the claim
+      // 'pending' (retried next run once the treasury is topped up) instead of moving it
+      // to 'sending' where a failed transfer would wedge it (H-3).
+      if (treasury.preflight) {
+        const pf = await treasury.preflight(Number(c.amount_usdt));
+        if (!pf.ok) { report.errors.push({ policyId: c.policy_id, error: `preflight:${pf.reason ?? 'not_ok'}` }); continue; }
       }
       // D7 phase 1: CAS pending→sending. If false, another run/actor already moved
       // this claim past 'pending' — do NOT send (fail-safe against double-send).

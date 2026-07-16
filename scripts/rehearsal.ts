@@ -51,7 +51,12 @@ const watcher = () =>
 
 async function main() {
   console.log(`Rehearsal → ${BASE}  (buyer ${PEPYS})`);
-  const transport = new StreamableHTTPClientTransport(new URL(`${BASE}/api/mcp/mcp`));
+  // In testnet/real mode the MCP endpoint requires the API key (see route.ts gate).
+  const apiKey = process.env.LLOYD_API_KEY;
+  const transport = new StreamableHTTPClientTransport(
+    new URL(`${BASE}/api/mcp/mcp`),
+    apiKey ? { requestInit: { headers: { authorization: `Bearer ${apiKey}` } } } : undefined,
+  );
   const client = new Client({ name: 'pepys', version: '1.0.0' });
   await client.connect(transport);
 

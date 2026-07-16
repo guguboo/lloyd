@@ -10,11 +10,21 @@ export const dbReputationSource: ReputationSource = {
   },
 };
 
-export const dbJobMonitor: JobMonitor = {
-  async getJobState(jobRef): Promise<JobState> {
-    const { data, error } = await db.from('demo_jobs').select('state').eq('job_ref', jobRef).maybeSingle();
+export const jobMonitor: JobMonitor = {
+  async getJobState(policy): Promise<JobState> {
+    // Real flow — the policy is anchored to an onchain job payment, so the provider's
+    // signed attestation is the oracle: signed = delivered, silent = still pending (and
+    // decideSettlement turns pending-past-deadline into a payout).
+    if (policy.job_tx) return policy.delivered_at ? 'delivered' : 'pending';
+
+    // Demo flow — job state comes from the seeded demo_jobs table.
+    const { data, error } = await db.from('demo_jobs').select('state').eq('job_ref', policy.job_ref).maybeSingle();
     if (error) throw error;
-    return (data?.state as JobState) ?? 'pending';
+    // Fail CLOSED (C-4): an unknown job_ref (no row) must never be payable. A phantom or
+    // unverified reference resolves to 'delivered' → 'expire' in decideSettlement, so it
+    // cannot trigger a payout on timeout. Only a job we actually track can pay out.
+    if (!data) return 'delivered';
+    return data.state as JobState;
   },
 };
 

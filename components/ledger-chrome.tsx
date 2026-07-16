@@ -78,8 +78,8 @@ export function LedgerLegend() {
   const { network } = useNetwork();
   const copy =
     network === 'testnet'
-      ? 'Live on X Layer testnet. The reserve is the settlement wallet’s real onchain balance; every policy is anchored onchain (its buyer wallet holds a real transaction) and every paid claim links to its real payout. Transactions carry a nominal OKB value to prove the rail; the dollar figures are each policy’s USDT-denominated terms.'
-      : 'This is Lloyd’s production wallet identity on X Layer mainnet. The demo’s real, executed settlements live under the Test wallet; the dollar figures are USDT-denominated policy terms.';
+      ? 'Live on X Layer testnet. The reserve is the settlement wallet’s real USDT balance, and every paid claim is a real USDT transfer of the coverage amount, verifiable onchain. Policies are Lloyd’s records; one settles onchain when its job fails and the claim pays. Jobs delivered on time simply lapse. All figures are USDT.'
+      : 'This is Lloyd’s production wallet identity on X Layer mainnet. The demo’s real, executed USDT settlements live under the Test wallet; the dollar figures are USDT-denominated policy terms.';
   return (
     <p className="flex items-start gap-2 text-xs leading-relaxed text-faint">
       <Info size={13} strokeWidth={1.8} className="mt-0.5 shrink-0 text-verdigris/70" aria-hidden />

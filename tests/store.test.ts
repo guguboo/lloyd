@@ -70,6 +70,7 @@ const insertedPolicy: PolicyRow = {
   job_ref: 'job-1', job_value_usdt: 20, tier: 'frigate', coverage_usdt: 16,
   premium_usdt: TIERS.frigate, deadline_at: '2026-07-14T12:00:00Z', status: 'active',
   created_at: '2026-07-01T00:00:00Z',
+  premium_tx: null, job_tx: null, delivered_at: null, delivery_sig: null,
 };
 
 beforeEach(() => {

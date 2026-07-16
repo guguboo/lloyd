@@ -30,7 +30,8 @@ function makePolicy(over: Partial<PolicyRow> = {}): PolicyRow {
     id: 'pol-1', quote_id: 'q-1', provider_id: 'prov-1', buyer_wallet: '0xBUYER',
     job_ref: 'job-1', job_value_usdt: 20, tier: 'frigate', coverage_usdt: 16,
     premium_usdt: 1.5, deadline_at: deadline, status: 'active',
-    created_at: '2026-07-01T00:00:00Z', ...over,
+    created_at: '2026-07-01T00:00:00Z',
+    premium_tx: null, job_tx: null, delivered_at: null, delivery_sig: null, ...over,
   };
 }
 function makeClaim(over: Partial<ClaimRow> = {}): ClaimRow {
@@ -41,9 +42,9 @@ function makeClaim(over: Partial<ClaimRow> = {}): ClaimRow {
   };
 }
 
-// Fake JobMonitor: resolves each job_ref to a fixed JobState via a lookup map.
+// Fake JobMonitor: resolves each policy's job_ref to a fixed JobState via a lookup map.
 function makeJobs(map: Record<string, JobState>): JobMonitor {
-  return { getJobState: vi.fn(async (jobRef: string) => map[jobRef]) };
+  return { getJobState: vi.fn(async (p: PolicyRow) => map[p.job_ref]) };
 }
 // Fake Treasury: records every sendUsdt call, returns a fixed tx hash by default.
 function makeTreasury(txHash = '0xTX'): Treasury & { sendUsdt: ReturnType<typeof vi.fn> } {
@@ -268,5 +269,45 @@ describe('runSettlement — pass-2 two-phase payout semantics (D7.4)', () => {
     expect(report.expired).toEqual(['pol-exp']);
     expect(report.paidOut).toEqual(['pol-pay']);
     expect(report.errors).toEqual([{ policyId: 'pol-stuck', error: 'stuck_sending' }]);
+  });
+
+  it('9. preflight ok:false (short funds) → claim left pending, no CAS, no send', async () => {
+    const policy = makePolicy();
+    m.getPendingClaims.mockResolvedValue([makeClaim()]);
+    m.getPolicy.mockResolvedValue(policy);
+    const jobs = makeJobs({ 'job-1': 'provider_fault' });
+    const treasury: Treasury & { sendUsdt: ReturnType<typeof vi.fn>; preflight: ReturnType<typeof vi.fn> } = {
+      sendUsdt: vi.fn(async () => ({ txHash: '0xNO' })),
+      preflight: vi.fn(async () => ({ ok: false, reason: 'insufficient_usdt' })),
+    };
+
+    const report = await runSettlement(jobs, treasury, beforeDeadline);
+
+    expect(treasury.preflight).toHaveBeenCalledWith(16);
+    // never moved to 'sending' → stays 'pending', retried next run once topped up
+    expect(m.markClaimSending).not.toHaveBeenCalled();
+    expect(treasury.sendUsdt).not.toHaveBeenCalled();
+    expect(m.markClaimPaid).not.toHaveBeenCalled();
+    expect(report.paidOut).toEqual([]);
+    expect(report.errors).toContainEqual({ policyId: 'pol-1', error: 'preflight:insufficient_usdt' });
+  });
+
+  it('10. preflight ok:true → proceeds through the CAS to a normal payout', async () => {
+    const policy = makePolicy();
+    m.getPendingClaims.mockResolvedValue([makeClaim()]);
+    m.getPolicy.mockResolvedValue(policy);
+    const jobs = makeJobs({ 'job-1': 'provider_fault' });
+    const treasury: Treasury & { sendUsdt: ReturnType<typeof vi.fn>; preflight: ReturnType<typeof vi.fn> } = {
+      sendUsdt: vi.fn(async () => ({ txHash: '0xOK' })),
+      preflight: vi.fn(async () => ({ ok: true })),
+    };
+
+    const report = await runSettlement(jobs, treasury, beforeDeadline);
+
+    expect(treasury.preflight).toHaveBeenCalledWith(16);
+    expect(m.markClaimSending).toHaveBeenCalledWith('clm-1');
+    expect(treasury.sendUsdt).toHaveBeenCalledTimes(1);
+    expect(m.markClaimPaid).toHaveBeenCalledWith('clm-1', '0xOK');
+    expect(report.paidOut).toEqual(['pol-1']);
   });
 });

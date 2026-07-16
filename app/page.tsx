@@ -28,6 +28,12 @@ export default function Landing() {
               Connect
             </Link>
             <Link
+              href="/providers"
+              className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-parchment"
+            >
+              For providers
+            </Link>
+            <Link
               href="/ledger"
               className="rounded-full border border-hairline px-4 py-2 text-sm text-muted transition-colors hover:border-verdigris/40 hover:text-parchment"
             >
