@@ -35,7 +35,7 @@ export function UtilizationMeter({ ratio, cap = 0.5 }: { ratio: number; cap?: nu
   const nearCap = fill >= 0.85;
   return (
     <div className="mt-1 flex flex-col gap-1.5">
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[oklch(0.72_0.11_175/0.12)]">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[oklch(0.85_0.02_250/0.12)]">
         <div
           className={cn(
             'h-full rounded-full transition-[width] duration-700',

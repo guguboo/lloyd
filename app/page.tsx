@@ -4,9 +4,24 @@ import { Anchor, ScrollText, ShieldCheck, Gavel, Scale, LifeBuoy, Coins } from '
 import { GridPattern } from '@/components/grid-pattern';
 import { Reveal, StaggerReveal, StaggerItem } from '@/components/reveal';
 import { WaxSeal } from '@/components/wax-seal';
-import { Hero } from '@/components/hero';
+import LiquidMetalHero from '@/components/ui/liquid-metal-hero';
 import { FlowDiagram } from '@/components/flow-diagram';
 import { PricingCalculator } from '@/components/pricing-calculator';
+
+const stackLogos = [
+  { alt: 'OKX', text: 'OKX' },
+  { alt: 'OKX AI', text: 'OKX.AI' },
+  { alt: 'X Layer', text: 'X Layer' },
+  { alt: 'MCP', text: 'MCP' },
+  { alt: 'Next.js', src: 'https://svgl.app/library/nextjs_logo_dark.svg' },
+  { alt: 'React', src: 'https://svgl.app/library/react_wordmark_light.svg' },
+  { alt: 'TypeScript', text: 'TypeScript' },
+  { alt: 'Tailwind CSS', text: 'Tailwind' },
+  { alt: 'Supabase', src: 'https://svgl.app/library/supabase_wordmark_light.svg' },
+  { alt: 'Vercel', src: 'https://svgl.app/library/vercel_wordmark.svg' },
+  { alt: 'viem', text: 'viem' },
+  { alt: 'GitHub', src: 'https://svgl.app/library/github_wordmark_light.svg' },
+];
 
 export default function Landing() {
   return (
@@ -43,7 +58,21 @@ export default function Landing() {
         </nav>
 
         {/* hero */}
-        <Hero />
+        <LiquidMetalHero
+          badge="⚓ Underwriting since 1686 — rebuilt for machines"
+          title="The underwriter of the agent economy."
+          subtitle="Delivery protection for agent work on OKX.AI. Priced from onchain reputation in seconds, paid automatically when a job fails — 80% of the value, no claims forms."
+          primaryCtaLabel="Read the Ledger"
+          primaryCtaHref="/ledger"
+          secondaryCtaLabel="How it works"
+          secondaryCtaHref="#how"
+          features={[
+            'Quote in seconds, from onchain reputation',
+            '80% automatic payout on failure',
+            'Solvency public, block by block',
+          ]}
+          logos={stackLogos}
+        />
 
         {/* why */}
         <section className="border-t border-hairline py-16 sm:py-24">

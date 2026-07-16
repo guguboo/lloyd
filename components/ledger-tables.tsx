@@ -35,7 +35,7 @@ const TRIGGER: Record<ClaimRow['trigger'], string> = {
 type Tone = 'good' | 'wait' | 'calm' | 'bad';
 
 const TONE: Record<Tone, string> = {
-  good: 'text-verdigris bg-[oklch(0.72_0.11_175/0.10)] ring-[oklch(0.72_0.11_175/0.30)]',
+  good: 'text-verdigris bg-[oklch(0.85_0.02_250/0.10)] ring-[oklch(0.85_0.02_250/0.30)]',
   wait: 'text-brass bg-[oklch(0.70_0.09_70/0.10)] ring-[oklch(0.70_0.09_70/0.30)]',
   calm: 'text-muted bg-transparent ring-hairline',
   bad: 'text-terracotta bg-[oklch(0.62_0.10_40/0.10)] ring-[oklch(0.62_0.10_40/0.30)]',
@@ -181,7 +181,7 @@ export function LedgerTables({ policies, claims }: { policies: PolicyRow[]; clai
               <td className="font-mono text-xs text-muted">{p.id.slice(0, 8)}</td>
               <td className="max-w-[10rem] truncate text-parchment">{p.provider_id}</td>
               <td>
-                <span className="rounded-md bg-[oklch(0.72_0.11_175/0.08)] px-2 py-0.5 text-xs capitalize text-verdigris">
+                <span className="rounded-md bg-[oklch(0.85_0.02_250/0.08)] px-2 py-0.5 text-xs capitalize text-verdigris">
                   {p.tier}
                 </span>
               </td>

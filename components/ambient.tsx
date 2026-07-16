@@ -26,19 +26,19 @@ export function Ambient() {
     <div ref={ref} aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div
         className="aurora-blob drift-1"
-        style={{ top: '-12%', left: '-6%', width: '46vw', height: '46vw', background: 'radial-gradient(circle, oklch(0.72 0.11 175 / 0.16), transparent 70%)' }}
+        style={{ top: '-12%', left: '-6%', width: '46vw', height: '46vw', background: 'radial-gradient(circle, oklch(0.85 0.02 250 / 0.16), transparent 70%)' }}
       />
       <div
         className="aurora-blob drift-2"
-        style={{ top: '26%', right: '-12%', width: '40vw', height: '40vw', background: 'radial-gradient(circle, oklch(0.60 0.10 210 / 0.14), transparent 70%)' }}
+        style={{ top: '26%', right: '-12%', width: '40vw', height: '40vw', background: 'radial-gradient(circle, oklch(0.70 0.02 255 / 0.14), transparent 70%)' }}
       />
       <div
         className="aurora-blob drift-3"
-        style={{ bottom: '-18%', left: '22%', width: '42vw', height: '42vw', background: 'radial-gradient(circle, oklch(0.70 0.09 160 / 0.12), transparent 70%)' }}
+        style={{ bottom: '-18%', left: '22%', width: '42vw', height: '42vw', background: 'radial-gradient(circle, oklch(0.60 0.015 255 / 0.12), transparent 70%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(340px circle at var(--mx, 50%) var(--my, 25%), oklch(0.72 0.11 175 / 0.06), transparent 70%)' }}
+        style={{ background: 'radial-gradient(340px circle at var(--mx, 50%) var(--my, 25%), oklch(0.85 0.02 250 / 0.06), transparent 70%)' }}
       />
     </div>
   );

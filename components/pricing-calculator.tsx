@@ -53,7 +53,7 @@ export function PricingCalculator() {
             step={1}
             value={jobValue}
             onChange={(e) => setJobValue(Number(e.target.value))}
-            className="mt-3 w-full accent-[oklch(0.72_0.11_175)]"
+            className="mt-3 w-full accent-[oklch(0.85_0.02_250)]"
           />
           <div className="mt-1 flex justify-between text-xs text-faint">
             <span>$5</span>
@@ -71,7 +71,7 @@ export function PricingCalculator() {
                 className={cn(
                   'rounded-lg border px-3 py-2.5 text-left transition-colors',
                   profileKey === p.key
-                    ? 'border-verdigris/50 bg-[oklch(0.72_0.11_175/0.10)]'
+                    ? 'border-verdigris/50 bg-[oklch(0.85_0.02_250/0.10)]'
                     : 'border-hairline hover:border-verdigris/30',
                 )}
               >
@@ -103,7 +103,7 @@ export function PricingCalculator() {
               <div className="flex items-center justify-between">
                 <span className="font-display text-xl text-parchment">{TIER_META[t].name}</span>
                 {isRec && (
-                  <span className="rounded-full bg-[oklch(0.72_0.11_175/0.12)] px-2 py-0.5 text-[0.62rem] uppercase tracking-wider text-verdigris">
+                  <span className="rounded-full bg-[oklch(0.85_0.02_250/0.12)] px-2 py-0.5 text-[0.62rem] uppercase tracking-wider text-verdigris">
                     Best value
                   </span>
                 )}

@@ -74,10 +74,10 @@ export function FlowDiagram({ children }: { children?: ReactNode }) {
                   <motion.span
                     className="flex h-12 w-12 items-center justify-center rounded-full border"
                     animate={{
-                      borderColor: done ? 'oklch(0.72 0.11 175 / 0.5)' : 'oklch(0.72 0.11 175 / 0.16)',
-                      backgroundColor: done ? 'oklch(0.72 0.11 175 / 0.12)' : 'oklch(0.22 0.024 205 / 0.4)',
+                      borderColor: done ? 'oklch(0.85 0.02 250 / 0.5)' : 'oklch(0.85 0.02 250 / 0.16)',
+                      backgroundColor: done ? 'oklch(0.85 0.02 250 / 0.12)' : 'oklch(0.22 0.008 255 / 0.4)',
                       scale: current ? 1.12 : 1,
-                      boxShadow: current ? '0 0 0 5px oklch(0.72 0.11 175 / 0.10)' : '0 0 0 0 transparent',
+                      boxShadow: current ? '0 0 0 5px oklch(0.85 0.02 250 / 0.10)' : '0 0 0 0 transparent',
                     }}
                     transition={{ duration: 0.4, ease: EASE }}
                   >
@@ -103,7 +103,7 @@ export function FlowDiagram({ children }: { children?: ReactNode }) {
             <div className="flex flex-wrap items-center gap-3">
               <h3 className="font-display text-2xl text-parchment">{stage.title}</h3>
               {stage.call && (
-                <code className="rounded bg-[oklch(0.72_0.11_175/0.08)] px-2 py-1 font-mono text-[0.7rem] text-verdigris">
+                <code className="rounded bg-[oklch(0.85_0.02_250/0.08)] px-2 py-1 font-mono text-[0.7rem] text-verdigris">
                   {stage.call}
                 </code>
               )}
@@ -111,7 +111,7 @@ export function FlowDiagram({ children }: { children?: ReactNode }) {
                 <span
                   className={`ml-auto inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset ${
                     OUTCOME[outcome].tone === 'good'
-                      ? 'text-verdigris bg-[oklch(0.72_0.11_175/0.10)] ring-[oklch(0.72_0.11_175/0.30)]'
+                      ? 'text-verdigris bg-[oklch(0.85_0.02_250/0.10)] ring-[oklch(0.85_0.02_250/0.30)]'
                       : 'text-brass bg-[oklch(0.70_0.09_70/0.10)] ring-[oklch(0.70_0.09_70/0.30)]'
                   }`}
                 >
