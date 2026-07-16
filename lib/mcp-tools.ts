@@ -11,6 +11,7 @@ import { verifyUsdtTransfer } from '@/lib/payment-proof';
 import { attestationMessage, verifyDeliveryAttestation } from '@/lib/attestation';
 import { activeNetwork, proofRequired } from '@/lib/xlayer';
 import { TREASURY } from '@/lib/chain';
+import { walletMismatch } from './auth-context';
 import {
   attestDelivery, bindQuote, createQuote, getBindContext, getFraudContext, getOpenQuote,
   getPolicy, getProviderWallet, isLinked, markPolicy, openClaim,
@@ -162,6 +163,11 @@ export function registerPaidTools(server: Srv): void {
       const quote = await getOpenQuote(quote_id);
       if (!quote) return json({ ok: false, error: 'quote_not_open_or_expired' });
 
+      // Per-wallet keys may only insure their own wallet: a stolen key cannot buy
+      // coverage that pays anyone but itself. Master key (operator) is unrestricted.
+      if (walletMismatch(quote.buyer_wallet))
+        return json({ ok: false, error: 'buyer_wallet_mismatch' });
+
       const chosenTier = tier ?? quote.recommended_tier;
       const premiumUsdt = TIERS[chosenTier];
 
@@ -257,6 +263,7 @@ export function registerPaidTools(server: Srv): void {
     guard(async ({ policy_id }) => {
       const p = await getPolicy(policy_id);
       if (!p) return json({ ok: false, error: 'not_found' });
+      if (walletMismatch(p.buyer_wallet)) return json({ ok: false, error: 'not_your_policy' });
       if (p.status !== 'active') return json({ ok: false, error: `policy_${p.status}` });
       const claim = await openClaim(p.id, 'manual', Number(p.coverage_usdt));
       if (!claim) return json({ ok: false, error: 'claim_already_exists' });
