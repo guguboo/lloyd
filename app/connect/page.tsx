@@ -7,7 +7,7 @@ import { WaxSealPress } from '@/components/wax-seal';
 import { ConnectKey } from '@/components/connect-key';
 
 export const metadata: Metadata = {
-  title: 'Connect — get your Lloyd API key',
+  title: 'get your API key',
   description: 'Connect your wallet and issue a personal API key for the Lloyd MCP endpoint. One gasless signature.',
 };
 

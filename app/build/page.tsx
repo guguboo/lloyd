@@ -88,7 +88,7 @@ const TOOLS: Tool[] = [
 ];
 
 export const metadata: Metadata = {
-  title: 'Build with Lloyd — MCP for agents',
+  title: 'MCP for agents',
   description:
     'Give your agent delivery insurance in two calls. Install the Lloyd MCP server and use its four tools: get_quote, bind_policy, get_policy, file_claim.',
 };

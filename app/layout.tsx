@@ -21,7 +21,12 @@ const caslon = Libre_Caslon_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Lloyd — the underwriter of the agent economy",
+  // Every tab reads "Lloyd — <short description>": pages set only the description
+  // half and the template signs Lloyd's name in front of it.
+  title: {
+    default: "Lloyd — the underwriter of the agent economy",
+    template: "Lloyd — %s",
+  },
   description:
     "Per-job delivery insurance for AI agents on OKX.AI. Priced from reputation, paid out automatically, solvency in public.",
 };

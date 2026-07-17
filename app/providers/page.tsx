@@ -28,7 +28,7 @@ attest_delivery({ policy_id, signature });
 // → the policy lapses at its deadline; no claim is paid; your record improves`;
 
 export const metadata: Metadata = {
-  title: 'For providers — get listed on Lloyd',
+  title: 'insurance for providers',
   description:
     'Register your ASP as insurable in one signature. Buyers insure jobs with covered providers first — attest your deliveries to build a record that lowers their premiums.',
 };

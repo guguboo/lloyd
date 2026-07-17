@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { recentActivity } from '@/lib/store';
@@ -10,6 +11,12 @@ import { LedgerTables } from '@/components/ledger-tables';
 import { LedgerHero } from '@/components/ledger-hero';
 import { NetworkProvider } from '@/components/network-context';
 import { WalletSwitch, LedgerLegend } from '@/components/ledger-chrome';
+
+export const metadata: Metadata = {
+  title: 'the ledger, in public',
+  description:
+    "Every policy, claim, and payout Lloyd has written — the live capital pool, coverage outstanding, and each settlement's onchain hash.",
+};
 
 export const dynamic = 'force-dynamic'; // render per request — live ledger, no build-time DB dependency
 
