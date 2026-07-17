@@ -82,7 +82,7 @@ export default function Landing() {
           <Reveal variant="blur">
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <Anchor size={16} strokeWidth={1.6} />
-              Why
+              Entry I · Why
             </p>
             <h2 className="max-w-[20ch] font-display text-3xl text-parchment sm:text-4xl">
               Trade across oceans was built on someone standing behind the risk.
@@ -112,7 +112,7 @@ export default function Landing() {
           <FlowDiagram>
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <ScrollText size={16} strokeWidth={1.6} />
-              How it works
+              Entry II · How it works
             </p>
             <h2 className="max-w-[22ch] font-display text-3xl text-parchment sm:text-4xl">
               Two calls, then Lloyd watches the chain.
@@ -129,7 +129,7 @@ export default function Landing() {
           <Reveal variant="blur">
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <ScrollText size={16} strokeWidth={1.6} />
-              Watch it happen
+              Entry III · Watch it happen
             </p>
             <h2 className="max-w-[22ch] font-display text-3xl text-parchment sm:text-4xl">
               One insured job, in real time.
@@ -148,7 +148,7 @@ export default function Landing() {
           <Reveal variant="scale">
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <Coins size={16} strokeWidth={1.6} />
-              Pricing
+              Entry IV · Pricing
             </p>
             <h2 className="max-w-[22ch] font-display text-3xl text-parchment sm:text-4xl">
               Fixed premiums. Risk-priced coverage.
@@ -168,7 +168,7 @@ export default function Landing() {
           <Reveal variant="right">
             <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
               <ShieldCheck size={16} strokeWidth={1.6} />
-              Solvency, in public
+              Entry V · Solvency, in public
             </p>
             <h2 className="max-w-[24ch] font-display text-3xl text-parchment sm:text-4xl">
               An insurer&apos;s only product is trust. So the books are open.
