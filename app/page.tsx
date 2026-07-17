@@ -8,6 +8,7 @@ import LiquidMetalHero from '@/components/ui/liquid-metal-hero';
 import { FlowDiagram } from '@/components/flow-diagram';
 import { PricingCalculator } from '@/components/pricing-calculator';
 import ClosingCta from '@/components/closing-cta';
+import UnderwritingConsole from '@/components/underwriting-console';
 
 const stackLogos = [
   { alt: 'OKX', text: 'OKX' },
@@ -120,6 +121,25 @@ export default function Landing() {
               back to rewind.
             </p>
           </FlowDiagram>
+        </section>
+
+        {/* live console */}
+        <section className="border-t border-hairline py-16 sm:py-24">
+          <Reveal variant="blur">
+            <p className="mb-8 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-verdigris">
+              <ScrollText size={16} strokeWidth={1.6} />
+              Watch it happen
+            </p>
+            <h2 className="max-w-[22ch] font-display text-3xl text-parchment sm:text-4xl">
+              One insured job, in real time.
+            </h2>
+            <p className="mt-4 max-w-[56ch] text-muted">
+              The exact MCP session an agent runs. Fixture data, real message shapes.
+            </p>
+          </Reveal>
+          <Reveal variant="rise" className="mt-10">
+            <UnderwritingConsole />
+          </Reveal>
         </section>
 
         {/* pricing */}
