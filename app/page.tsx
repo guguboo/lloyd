@@ -10,6 +10,7 @@ import { InkRule } from '@/components/ink-rule';
 import { PricingCalculator } from '@/components/pricing-calculator';
 import ClosingCta from '@/components/closing-cta';
 import UnderwritingConsole from '@/components/underwriting-console';
+import { SealEasterEgg } from '@/components/seal-easter-egg';
 
 const stackLogos = [
   { alt: 'OKX', text: 'OKX' },
@@ -29,6 +30,7 @@ const stackLogos = [
 export default function Landing() {
   return (
     <div className="relative min-h-screen overflow-x-clip">
+      <SealEasterEgg />
       <GridPattern className="text-verdigris/[0.05] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_-5%,#000_20%,transparent_75%)]" />
 
       <div className="relative mx-auto max-w-[1080px] px-6">
