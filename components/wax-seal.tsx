@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 /**
@@ -19,5 +22,18 @@ export function WaxSeal({ size = 56, className }: { size?: number; className?: s
       style={{ height: 'auto' }}
       className={cn('select-none', className)}
     />
+  );
+}
+
+/** Nav-sized seal that presses like a stamp on click. */
+export function WaxSealPress({ size = 34 }: { size?: number }) {
+  return (
+    <motion.span
+      className="inline-block"
+      whileTap={{ scale: 0.82, rotate: -6 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+    >
+      <WaxSeal size={size} />
+    </motion.span>
   );
 }

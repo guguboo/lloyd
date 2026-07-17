@@ -5,7 +5,7 @@ import { Anchor, Compass, ScrollText, Waves } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GridPattern } from '@/components/grid-pattern';
 import { Reveal } from '@/components/reveal';
-import { WaxSeal } from '@/components/wax-seal';
+import { WaxSeal, WaxSealPress } from '@/components/wax-seal';
 import { CopyButton } from '@/components/copy-button';
 
 // The single source of truth for the MCP endpoint. Change this one line at deploy.
@@ -101,7 +101,7 @@ export default function Build() {
         {/* nav */}
         <nav className="flex items-center justify-between py-6">
           <Link href="/" className="flex items-center gap-3">
-            <WaxSeal size={34} />
+            <WaxSealPress size={34} />
             <span className="font-display text-xl text-parchment">Lloyd</span>
           </Link>
           <div className="flex items-center gap-2">

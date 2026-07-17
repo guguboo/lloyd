@@ -6,6 +6,7 @@ import { useReducedMotion, motion, type Variants } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Magnetic } from '@/components/magnetic';
 import { LogoCloud } from '@/components/ui/logo-cloud';
 
 interface HeroLogo {
@@ -108,27 +109,31 @@ export default function LiquidMetalHero({
             className="flex flex-col items-center justify-center gap-4 sm:flex-row"
             {...anim(0.6)}
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                asChild
-                size="lg"
-                className="rounded-full bg-parchment px-8 py-6 text-base font-semibold text-ink shadow-2xl transition-all duration-300 hover:bg-parchment/90"
-              >
-                <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
-              </Button>
-            </motion.div>
-
-            {secondaryCtaLabel && secondaryCtaHref && (
+            <Magnetic>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   asChild
-                  variant="outline"
                   size="lg"
-                  className="rounded-full border-parchment/30 bg-ink/55 px-8 py-6 text-base font-semibold text-parchment backdrop-blur-md transition-all duration-300 hover:border-parchment/50 hover:bg-ink/70"
+                  className="rounded-full bg-parchment px-8 py-6 text-base font-semibold text-ink shadow-2xl transition-all duration-300 hover:bg-parchment/90"
                 >
-                  <Link href={secondaryCtaHref}>{secondaryCtaLabel}</Link>
+                  <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
                 </Button>
               </motion.div>
+            </Magnetic>
+
+            {secondaryCtaLabel && secondaryCtaHref && (
+              <Magnetic>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full border-parchment/30 bg-ink/55 px-8 py-6 text-base font-semibold text-parchment backdrop-blur-md transition-all duration-300 hover:border-parchment/50 hover:bg-ink/70"
+                  >
+                    <Link href={secondaryCtaHref}>{secondaryCtaLabel}</Link>
+                  </Button>
+                </motion.div>
+              </Magnetic>
             )}
           </motion.div>
 

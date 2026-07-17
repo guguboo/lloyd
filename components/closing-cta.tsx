@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Metaballs } from '@paper-design/shaders-react';
+import { Magnetic } from '@/components/magnetic';
 import { Reveal } from '@/components/reveal';
 import { ShaderVeil } from '@/components/shader-veil';
 
@@ -39,18 +40,22 @@ export default function ClosingCta() {
         </Reveal>
         <Reveal variant="rise" delay={0.15}>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/build"
-              className="rounded-full bg-parchment px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-verdigris-lit"
-            >
-              Connect your agent
-            </Link>
-            <Link
-              href="/ledger"
-              className="rounded-full border border-hairline px-6 py-3 text-sm text-parchment transition-colors hover:border-verdigris/40"
-            >
-              Read the Ledger
-            </Link>
+            <Magnetic>
+              <Link
+                href="/build"
+                className="inline-block rounded-full bg-parchment px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-verdigris-lit"
+              >
+                Connect your agent
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <Link
+                href="/ledger"
+                className="inline-block rounded-full border border-hairline px-6 py-3 text-sm text-parchment transition-colors hover:border-verdigris/40"
+              >
+                Read the Ledger
+              </Link>
+            </Magnetic>
           </div>
         </Reveal>
       </div>

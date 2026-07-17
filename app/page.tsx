@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Anchor, ScrollText, ShieldCheck, Gavel, Scale, LifeBuoy, Coins } from 'lucide-react';
 import { GridPattern } from '@/components/grid-pattern';
 import { Reveal, StaggerReveal, StaggerItem } from '@/components/reveal';
-import { WaxSeal } from '@/components/wax-seal';
+import { WaxSeal, WaxSealPress } from '@/components/wax-seal';
 import LiquidMetalHero from '@/components/ui/liquid-metal-hero';
 import { FlowDiagram } from '@/components/flow-diagram';
 import { PricingCalculator } from '@/components/pricing-calculator';
@@ -34,7 +34,7 @@ export default function Landing() {
         {/* nav */}
         <nav className="flex items-center justify-between py-6">
           <span className="flex items-center gap-3">
-            <WaxSeal size={34} />
+            <WaxSealPress size={34} />
             <span className="font-display text-xl text-parchment">Lloyd</span>
           </span>
           <div className="flex items-center gap-2">

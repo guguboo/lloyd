@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GridPattern } from '@/components/grid-pattern';
 import { Reveal } from '@/components/reveal';
-import { WaxSeal } from '@/components/wax-seal';
+import { WaxSealPress } from '@/components/wax-seal';
 import { ConnectKey } from '@/components/connect-key';
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default function Connect() {
       <div className="relative mx-auto max-w-[1080px] px-6">
         <nav className="flex items-center justify-between py-6">
           <Link href="/" className="flex items-center gap-3">
-            <WaxSeal size={34} />
+            <WaxSealPress size={34} />
             <span className="font-display text-xl text-parchment">Lloyd</span>
           </Link>
           <div className="flex items-center gap-2">
