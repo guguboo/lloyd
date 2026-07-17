@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { recentActivity } from '@/lib/store';
 import { getOnchainBalances } from '@/lib/onchain';
 import { GridPattern } from '@/components/grid-pattern';
+import { PageWash } from '@/components/page-wash';
 import { StatusDot } from '@/components/status-dot';
 import { WaxSeal } from '@/components/wax-seal';
 import { LedgerTables } from '@/components/ledger-tables';
@@ -48,6 +49,7 @@ export default function Ledger() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <GridPattern className="text-verdigris/[0.055] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_25%,transparent_78%)]" />
+      <PageWash />
 
       <NetworkProvider>
       <main className="relative mx-auto max-w-[1080px] px-6 py-14 sm:py-20">

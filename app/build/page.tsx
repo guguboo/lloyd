@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Anchor, Compass, ScrollText, Waves } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GridPattern } from '@/components/grid-pattern';
+import { PageWash } from '@/components/page-wash';
 import { Reveal } from '@/components/reveal';
 import { WaxSeal, WaxSealPress } from '@/components/wax-seal';
 import { CopyButton } from '@/components/copy-button';
@@ -96,6 +97,7 @@ export default function Build() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <GridPattern className="text-verdigris/[0.05] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_-5%,#000_20%,transparent_75%)]" />
+      <PageWash />
 
       <div className="relative mx-auto max-w-[1080px] px-6">
         {/* nav */}
