@@ -13,14 +13,14 @@ import UnderwritingConsole from '@/components/underwriting-console';
 import { SealEasterEgg } from '@/components/seal-easter-egg';
 
 const stackLogos = [
-  { alt: 'OKX', text: 'OKX' },
+  { alt: 'OKX', src: '/logos/okx.svg' },
   { alt: 'OKX AI', text: 'OKX.AI' },
-  { alt: 'X Layer', text: 'X Layer' },
-  { alt: 'MCP', text: 'MCP' },
+  { alt: 'X Layer', src: '/logos/xlayer.svg', label: 'X Layer' },
+  { alt: 'MCP', src: 'https://svgl.app/library/model-context-protocol-wordmark-light.svg' },
   { alt: 'Next.js', src: 'https://svgl.app/library/nextjs_logo_dark.svg' },
   { alt: 'React', src: 'https://svgl.app/library/react_wordmark_light.svg' },
-  { alt: 'TypeScript', text: 'TypeScript' },
-  { alt: 'Tailwind CSS', text: 'Tailwind' },
+  { alt: 'TypeScript', src: 'https://svgl.app/library/typescript.svg', label: 'TypeScript' },
+  { alt: 'Tailwind CSS', src: 'https://svgl.app/library/tailwindcss-wordmark.svg' },
   { alt: 'Supabase', src: 'https://svgl.app/library/supabase_wordmark_light.svg' },
   { alt: 'Vercel', src: 'https://svgl.app/library/vercel_wordmark.svg' },
   { alt: 'viem', text: 'viem' },

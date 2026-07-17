@@ -5,8 +5,10 @@ type Logo = {
   alt: string;
   /** SVG/image source. Omit to render `text` as a wordmark instead. */
   src?: string;
-  /** Text wordmark fallback for brands without a hosted SVG (OKX, X Layer, MCP…). */
+  /** Text wordmark fallback for brands without a hosted SVG (OKX.AI, viem…). */
   text?: string;
+  /** Rendered next to `src` for marks that need their name spelled out (X Layer). */
+  label?: string;
   width?: number;
   height?: number;
 };
@@ -24,19 +26,25 @@ export function LogoCloud({ className, logos, ...props }: LogoCloudProps) {
         className,
       )}
     >
-      <InfiniteSlider gap={56} reverse duration={32} durationOnHover={90}>
+      <InfiniteSlider gap={56} reverse duration={48} durationOnHover={110}>
         {logos.map((logo) =>
           logo.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              alt={logo.alt}
-              className="pointer-events-none h-4 select-none brightness-0 invert opacity-60 md:h-5"
-              height={logo.height || 'auto'}
-              key={`logo-${logo.alt}`}
-              loading="lazy"
-              src={logo.src}
-              width={logo.width || 'auto'}
-            />
+            <span key={`logo-${logo.alt}`} className="pointer-events-none flex select-none items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt={logo.alt}
+                className="h-4 brightness-0 invert opacity-60 md:h-5"
+                height={logo.height || 'auto'}
+                loading="lazy"
+                src={logo.src}
+                width={logo.width || 'auto'}
+              />
+              {logo.label ? (
+                <span className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-parchment/60 md:text-base">
+                  {logo.label}
+                </span>
+              ) : null}
+            </span>
           ) : (
             <span
               key={`logo-${logo.alt}`}

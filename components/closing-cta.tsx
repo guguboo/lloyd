@@ -14,11 +14,13 @@ export default function ClosingCta() {
   return (
     <section className="relative -mx-6 overflow-hidden border-t border-hairline">
       <ShaderVeil fallbackClassName="bg-[radial-gradient(ellipse_75%_90%_at_50%_100%,oklch(0.30_0.03_250)_0%,oklch(0.14_0.006_255)_70%)]">
+        {/* chromatic palette echoes the hero's LiquidMetal fringing: amber and
+            azure accents against the steel ramp, so both shader moments rhyme */}
         <Metaballs
           className="absolute inset-0 h-full w-full"
           colorBack="#101216"
-          colors={['#2c3642', '#5d7080', '#9fb4c6', '#e4eaf3']}
-          count={7}
+          colors={['#2c3642', '#5d7080', '#d9924a', '#9fb4c6', '#5aa7d9', '#e4eaf3']}
+          count={8}
           size={0.92}
           speed={0.55}
           scale={1.15}
