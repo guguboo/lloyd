@@ -7,6 +7,7 @@ import { WaxSeal } from '@/components/wax-seal';
 import LiquidMetalHero from '@/components/ui/liquid-metal-hero';
 import { FlowDiagram } from '@/components/flow-diagram';
 import { PricingCalculator } from '@/components/pricing-calculator';
+import ClosingCta from '@/components/closing-cta';
 
 const stackLogos = [
   { alt: 'OKX', text: 'OKX' },
@@ -190,6 +191,9 @@ export default function Landing() {
             </StaggerItem>
           </StaggerReveal>
         </section>
+
+        {/* the signature */}
+        <ClosingCta />
 
         <footer className="flex flex-col gap-4 border-t border-hairline py-12 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 text-sm">
