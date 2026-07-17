@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Metaballs } from '@paper-design/shaders-react';
+import { LiquidMetal } from '@paper-design/shaders-react';
 import { Magnetic } from '@/components/magnetic';
 import { Reveal } from '@/components/reveal';
 import { ShaderVeil } from '@/components/shader-veil';
@@ -14,16 +14,25 @@ export default function ClosingCta() {
   return (
     <section className="relative -mx-6 overflow-hidden border-t border-hairline">
       <ShaderVeil fallbackClassName="bg-[radial-gradient(ellipse_75%_90%_at_50%_100%,oklch(0.30_0.03_250)_0%,oklch(0.14_0.006_255)_70%)]">
-        {/* chromatic palette echoes the hero's LiquidMetal fringing: amber and
-            azure accents against the steel ramp, so both shader moments rhyme */}
-        <Metaballs
+        {/* the hero's chrome, poured into blobs: same LiquidMetal material,
+            metaballs shape — silver stripes, chromatic fringing, one language.
+            maxPixelCount caps the render target so the full-bleed section
+            stays smooth on high-DPI screens. */}
+        <LiquidMetal
           className="absolute inset-0 h-full w-full"
-          colorBack="#101216"
-          colors={['#2c3642', '#5d7080', '#d9924a', '#9fb4c6', '#5aa7d9', '#e4eaf3']}
-          count={8}
-          size={0.92}
-          speed={0.55}
-          scale={1.15}
+          colorBack="#0b0c0e"
+          colorTint="#e8eaef"
+          shape="metaballs"
+          scale={1}
+          softness={0.3}
+          repetition={2}
+          shiftRed={0.3}
+          shiftBlue={0.35}
+          distortion={0.08}
+          contour={0.6}
+          angle={72}
+          speed={0.5}
+          maxPixelCount={1_200_000}
         />
         {/* dim + fade into the footer so text stays AA-contrast */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_50%_45%,transparent_0%,oklch(0.14_0.006_255/0.72)_100%)]" />
