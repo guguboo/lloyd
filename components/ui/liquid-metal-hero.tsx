@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LiquidMetal } from '@paper-design/shaders-react';
+import { ShaderVeil } from '@/components/shader-veil';
 import { useReducedMotion, motion, type Variants } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,22 +54,30 @@ export default function LiquidMetalHero({
 
   return (
     <section className="relative left-1/2 flex min-h-[92svh] w-screen -translate-x-1/2 flex-col justify-center overflow-hidden px-6 py-16">
-      {/* molten chrome — the wax seal gone liquid */}
-      <LiquidMetal
-        colorBack="#0b0c0e"
-        colorTint="#e8eaef"
-        shape="diamond"
-        scale={0.82}
-        softness={0.35}
-        repetition={2}
-        shiftRed={0.25}
-        shiftBlue={0.35}
-        distortion={0.06}
-        contour={0.5}
-        angle={72}
-        speed={reduce ? 0 : 0.55}
-        style={{ position: 'absolute', inset: 0, zIndex: 0 }}
-      />
+      {/* molten chrome — the wax seal gone liquid. Veiled so the GPU is
+          released once the hero scrolls out; maxPixelCount caps the render
+          target on high-DPI screens (same discipline as the closing blob). */}
+      <ShaderVeil
+        className="z-0"
+        fallbackClassName="bg-[radial-gradient(ellipse_65%_60%_at_50%_42%,#17191d_0%,#0b0c0e_78%)]"
+      >
+        <LiquidMetal
+          className="absolute inset-0 h-full w-full"
+          colorBack="#0b0c0e"
+          colorTint="#e8eaef"
+          shape="diamond"
+          scale={0.82}
+          softness={0.35}
+          repetition={2}
+          shiftRed={0.25}
+          shiftBlue={0.35}
+          distortion={0.06}
+          contour={0.5}
+          angle={72}
+          speed={0.55}
+          maxPixelCount={1_200_000}
+        />
+      </ShaderVeil>
       {/* legibility veil + grain over the shader */}
       <div
         aria-hidden
