@@ -4,4 +4,4 @@
 .superpowers
 docs
 scripts/seed-demo.ts
-*.png
+assets
